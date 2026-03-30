@@ -5,29 +5,36 @@ import { EmptyState } from "@/src/components/EmptyState";
 import { HeroSlider } from "@/src/components/HeroSlider";
 import { IntroSection } from "@/src/components/IntroSection";
 
+import type { Memory } from "@/src/types";
+
 export const revalidate = 0;
 
 export default async function Home() {
-  let memories: any[] = [];
-  let error: any = null;
+  let memories: Memory[] = [];
+  let error: Error | null = null;
   
   try {
     const rawMemories = await prisma.memory.findMany({
       orderBy: { memory_date: 'desc' },
       include: {
+        images: { select: { imageUrl: true }, orderBy: { sortOrder: 'asc' } },
         _count: {
           select: { likes: true, comments: true }
         }
       }
     });
 
-    memories = rawMemories.map(m => ({
+    memories = rawMemories.map((m) => ({
       ...m,
+      memory_date: m.memory_date instanceof Date ? m.memory_date.toISOString() : String(m.memory_date),
+      created_at: m.createdAt instanceof Date ? m.createdAt.toISOString() : String(m.createdAt),
+      updated_at: m.updatedAt instanceof Date ? m.updatedAt.toISOString() : String(m.updatedAt),
+      post_images: m.images.map((img: { imageUrl: string }) => ({ image_url: img.imageUrl })),
       likes: [{ count: m._count.likes }],
       comments: [{ count: m._count.comments }]
-    }));
-  } catch (err: any) {
-    error = err;
+    })) as unknown as Memory[];
+  } catch (err) {
+    error = err instanceof Error ? err : new Error(String(err));
   }
 
   const featuredMemories = memories?.slice(0, 5) || [];

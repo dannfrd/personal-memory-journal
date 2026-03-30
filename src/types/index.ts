@@ -10,6 +10,7 @@ export interface Memory {
   updated_at: string;
   likes?: { count: number }[];
   comments?: { count: number }[];
+  post_images?: { image_url: string }[];
 }
 
 export interface PostImage {
