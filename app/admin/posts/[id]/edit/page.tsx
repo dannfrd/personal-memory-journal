@@ -3,14 +3,15 @@ import prisma from "@/src/lib/prisma";
 import { AdminHeader } from "@/src/components/admin/AdminHeader";
 import { PageContainer } from "@/src/components/PageContainer";
 import { MemoryForm } from "@/src/components/admin/MemoryForm";
+import type { Memory } from "@/src/types";
 
 export const revalidate = 0;
 
 export default async function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const id = resolvedParams.id;
-  let memory: any = null;
-  let error: any = null;
+  let memory: Memory | null = null;
+  let error: Error | null = null;
   try {
     const rawMemory = await prisma.memory.findUnique({
       where: { id },
@@ -22,11 +23,14 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
     if (rawMemory) {
       memory = {
         ...rawMemory,
+        memory_date: rawMemory.memory_date.toISOString(),
+        createdAt: rawMemory.createdAt.toISOString(),
+        updatedAt: rawMemory.updatedAt.toISOString(),
         post_images: rawMemory.images.map(img => ({ image_url: img.imageUrl })),
-      };
+      } as unknown as Memory;
     }
-  } catch (err: any) {
-    error = err;
+  } catch (err) {
+    error = err instanceof Error ? err : new Error(String(err));
   }
 
   if (error || !memory) {

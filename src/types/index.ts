@@ -33,5 +33,6 @@ export interface Comment {
   post_id: string;
   username: string;
   content: string;
+  parent_id?: string | null;
   created_at: string;
 }

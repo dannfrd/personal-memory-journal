@@ -52,11 +52,14 @@ model Like {
 model Comment {
   id         String   @id @default(uuid())
   postId     String   @map("post_id")
+  parentId   String?  @map("parent_id")
   username   String
   content    String   @db.Text
   createdAt  DateTime @default(now()) @map("created_at")
 
   memory     Memory   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parent     Comment?   @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    Comment[]  @relation("CommentToComment")
 
   @@map("comments")
 }

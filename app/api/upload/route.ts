@@ -1,8 +1,23 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
+import { writeFile, mkdir } from 'fs/promises';
+import { join, basename } from 'path';
+import { cookies } from 'next/headers';
+
+// Allowed MIME types
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export async function POST(request: Request) {
+  // 1. Auth check — only logged-in admin can upload
+  const cookieStore = await cookies();
+  const adminToken = cookieStore.get('admin_token');
+  if (!adminToken || adminToken.value !== 'authenticated') {
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   try {
     const data = await request.formData();
     const file: File | null = data.get('file') as unknown as File;
@@ -11,30 +26,53 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'No file uploaded' }, { status: 400 });
     }
 
+    // 2. Validate file type
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid file type. Only JPG, PNG, WebP, and GIF are allowed.' },
+        { status: 400 }
+      );
+    }
+
+    // 3. Validate file size
+    if (file.size > MAX_SIZE_BYTES) {
+      return NextResponse.json(
+        { success: false, error: 'File too large. Maximum size is 10 MB.' },
+        { status: 400 }
+      );
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create unique filename to prevent overwriting
+    // 4. Sanitize filename — strip directory traversal chars, keep only safe chars
+    const safeName = basename(file.name).replace(/[^a-zA-Z0-9.\-_]/g, '');
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '');
-    const filename = `${uniqueSuffix}-${sanitizedName}`;
-    
-    // Target the public/uploads directory
+    const filename = `${uniqueSuffix}-${safeName}`;
+
+    // 5. Ensure upload directory exists
     const uploadDir = join(process.cwd(), 'public', 'uploads');
-    const path = join(uploadDir, filename);
+    await mkdir(uploadDir, { recursive: true });
 
-    // Write file to disk
-    await writeFile(path, buffer);
+    // 6. Ensure path stays within uploadDir (prevent path traversal)
+    const filePath = join(uploadDir, filename);
+    if (!filePath.startsWith(uploadDir)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid filename.' },
+        { status: 400 }
+      );
+    }
 
-    // Return the public URL path
-    return NextResponse.json({ 
-      success: true, 
-      url: `/uploads/${filename}` 
+    await writeFile(filePath, buffer);
+
+    return NextResponse.json({
+      success: true,
+      url: `/uploads/${filename}`
     });
   } catch (error) {
     console.error('Error uploading file:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' }, 
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }

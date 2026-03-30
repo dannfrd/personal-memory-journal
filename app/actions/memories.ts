@@ -3,7 +3,22 @@
 import prisma from "@/src/lib/prisma"
 import { revalidatePath } from "next/cache"
 
-export async function saveMemory(data: any, postId?: string) {
+interface MemoryData {
+  title: string
+  coverImageUrl: string
+  description: string
+  memoryDate: string
+  location?: string
+  mood?: string
+  galleryImages?: string[]
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message
+  return String(error)
+}
+
+export async function saveMemory(data: MemoryData, postId?: string) {
   try {
     const { 
       title, coverImageUrl, description, memoryDate, location, mood, galleryImages 
@@ -58,9 +73,9 @@ export async function saveMemory(data: any, postId?: string) {
     revalidatePath('/')
     revalidatePath('/admin/posts')
     return { success: true, postId }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Save error:", error)
-    return { success: false, error: error.message }
+    return { success: false, error: getErrorMessage(error) }
   }
 }
 
@@ -72,9 +87,9 @@ export async function deleteMemory(postId: string) {
     revalidatePath('/')
     revalidatePath('/admin/posts')
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Delete error:", error)
-    return { success: false, error: error.message }
+    return { success: false, error: getErrorMessage(error) }
   }
 }
 
@@ -88,8 +103,8 @@ export async function likeMemory(postId: string, sessionIdentifier: string) {
     })
     revalidatePath(`/memories/${postId}`)
     return { success: true }
-  } catch (error: any) {
-    return { success: false, error: error.message }
+  } catch (error: unknown) {
+    return { success: false, error: getErrorMessage(error) }
   }
 }
 
@@ -105,24 +120,25 @@ export async function unlikeMemory(postId: string, sessionIdentifier: string) {
     })
     revalidatePath(`/memories/${postId}`)
     return { success: true }
-  } catch (error: any) {
-    return { success: false, error: error.message }
+  } catch (error: unknown) {
+    return { success: false, error: getErrorMessage(error) }
   }
 }
 
-export async function addComment(postId: string, username: string, content: string) {
+export async function addComment(postId: string, username: string, content: string, parentId?: string | null) {
   try {
     await prisma.comment.create({
       data: {
         postId,
+        parentId,
         username,
         content
       }
     })
     revalidatePath(`/memories/${postId}`)
     return { success: true }
-  } catch (error: any) {
-    return { success: false, error: error.message }
+  } catch (error: unknown) {
+    return { success: false, error: getErrorMessage(error) }
   }
 }
 
@@ -151,11 +167,12 @@ export async function getComments(postId: string) {
         id: c.id, 
         username: c.username, 
         content: c.content, 
-        post_id: c.postId, 
+        post_id: c.postId,
+        parent_id: c.parentId,
         created_at: c.createdAt.toISOString()
       })) 
     };
-  } catch (error: any) {
-    return { success: false, error: error.message };
+  } catch (error: unknown) {
+    return { success: false, error: getErrorMessage(error) };
   }
 }

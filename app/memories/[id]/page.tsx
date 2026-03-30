@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Prisma } from "@prisma/client";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import prisma from "@/src/lib/prisma";
@@ -6,22 +7,33 @@ import { Navbar } from "@/src/components/Navbar";
 import { formatDate } from "@/src/lib/utils";
 import { MemoryDetailGallery } from "@/src/components/MemoryDetailGallery";
 import { LikeButton } from "@/src/components/social/LikeButton";
-import { Comments } from "@/src/components/social/Comments";
+import { CommentModalButton } from "@/src/components/social/CommentModalButton";
 
 export const revalidate = 0;
 
 export default async function MemoryDetail({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const id = resolvedParams.id;
-  let memory: any = null;
-  let error: any = null;
+  type MemoryWithRelations = Prisma.MemoryGetPayload<{
+    include: {
+      images: { select: { imageUrl: true }; orderBy: { sortOrder: "asc" } };
+      _count: { select: { likes: true; comments: true } };
+    };
+  }> & {
+    post_images: { image_url: string }[];
+    likes: { count: number }[];
+    comments: { count: number }[];
+  };
+
+  let memory: MemoryWithRelations | null = null;
+  let error: unknown = null;
   
   try {
     const rawMemory = await prisma.memory.findUnique({
       where: { id },
       include: {
         images: { select: { imageUrl: true }, orderBy: { sortOrder: 'asc' } },
-        _count: { select: { likes: true } }
+        _count: { select: { likes: true, comments: true } }
       }
     });
 
@@ -29,10 +41,11 @@ export default async function MemoryDetail({ params }: { params: Promise<{ id: s
       memory = {
         ...rawMemory,
         post_images: rawMemory.images.map(img => ({ image_url: img.imageUrl })),
-        likes: [{ count: rawMemory._count.likes }]
+        likes: [{ count: rawMemory._count.likes }],
+        comments: [{ count: rawMemory._count.comments }]
       };
     }
-  } catch (err: any) {
+  } catch (err) {
     error = err;
   }
 
@@ -41,6 +54,7 @@ export default async function MemoryDetail({ params }: { params: Promise<{ id: s
   }
   
   const likeCount = memory.likes?.[0]?.count || 0;
+  const commentCount = memory.comments?.[0]?.count || 0;
 
   return (
     <div className="min-h-screen font-sans bg-[#EAE5DF] text-[#2B303A] selection:bg-black selection:text-white">
@@ -91,11 +105,10 @@ export default async function MemoryDetail({ params }: { params: Promise<{ id: s
               ))}
             </div>
             
-            <div className="mt-16 flex items-center">
+            <div className="mt-16 flex items-center gap-4">
                <LikeButton postId={memory.id} initialCount={likeCount} />
+               <CommentModalButton postId={memory.id} initialCount={commentCount} />
             </div>
-
-            <Comments postId={memory.id} />
           </article>
         </div>
 
