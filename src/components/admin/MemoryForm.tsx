@@ -3,13 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createClient } from "@/src/lib/supabase/client";
+import { saveMemory } from "@/app/actions/memories";
 import { Loader2 } from "lucide-react";
 import { ImageUploader } from "./ImageUploader";
 
 export function MemoryForm({ initialData = null }: { initialData?: any }) {
   const router = useRouter();
-  const supabase = createClient();
   const isEditing = !!initialData;
 
   const [title, setTitle] = useState(initialData?.title || "");
@@ -46,21 +45,19 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
       // Upload new files
       if (files.length > 0) {
         for (const file of files) {
-          const fileExt = file.name.split(".").pop();
-          const fileName = `${crypto.randomUUID()}.${fileExt}`;
-          const filePath = fileName;
-
-          const { error: uploadError } = await supabase.storage
-            .from("memories")
-            .upload(filePath, file);
-
-          if (uploadError) throw uploadError;
-
-          const { data: publicUrlData } = supabase.storage
-            .from("memories")
-            .getPublicUrl(filePath);
-
-          newImageUrls.push(publicUrlData.publicUrl);
+          const formData = new FormData();
+          formData.append('file', file);
+          
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!uploadRes.ok) throw new Error("Upload failed");
+          const { url, error: uploadError } = await uploadRes.json();
+          if (uploadError) throw new Error(uploadError);
+          
+          newImageUrls.push(url);
         }
       }
 
@@ -70,45 +67,16 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
 
       const postData = {
         title: title || null,
-        cover_image_url: coverImageUrl,
+        coverImageUrl,
         description,
-        memory_date: new Date(date).toISOString(),
+        memoryDate: new Date(date).toISOString(),
         location: location || null,
         mood: mood || null,
+        galleryImages
       };
 
-      let postId = initialData?.id;
-
-      if (isEditing) {
-        const { error: updateError } = await supabase
-          .from("posts")
-          .update(postData)
-          .eq("id", postId);
-
-        if (updateError) throw updateError;
-
-        // Reset gallery
-        await supabase.from("post_images").delete().eq("post_id", postId);
-      } else {
-        const { data: insertData, error: insertError } = await supabase
-          .from("posts")
-          .insert([postData])
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-        postId = insertData.id;
-      }
-
-      if (postId && galleryImages.length > 0) {
-        const imagesToInsert = galleryImages.map((url, index) => ({
-          post_id: postId,
-          image_url: url,
-          sort_order: index + 1,
-        }));
-        const { error: galleryError } = await supabase.from("post_images").insert(imagesToInsert);
-        if (galleryError) throw galleryError;
-      }
+      const result = await saveMemory(postData, initialData?.id);
+      if (!result.success) throw new Error(result.error);
 
       toast.success(isEditing ? "Memory updated!" : "Memory created!", { id: toastId });
       router.push("/admin/posts");

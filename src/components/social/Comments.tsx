@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/src/lib/supabase/client";
+import { getComments, addComment } from "@/app/actions/memories";
 import { Comment } from "@/src/types";
 import { formatDate } from "@/src/lib/utils";
 import { Loader2 } from "lucide-react";
@@ -12,36 +12,36 @@ export function Comments({ postId }: { postId: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [username, setUsername] = useState("");
   const [content, setContent] = useState("");
-  const supabase = createClient();
 
   useEffect(() => {
     const fetchComments = async () => {
-      const { data } = await supabase
-        .from("comments")
-        .select("*")
-        .eq("post_id", postId)
-        .order("created_at", { ascending: true });
-      if (data) setComments(data);
+      const res = await getComments(postId);
+      if (res.success && res.comments) {
+        setComments(res.comments as any);
+      }
       setLoading(false);
     };
     fetchComments();
-  }, [postId, supabase]);
+  }, [postId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !content.trim()) return;
     
     setSubmitting(true);
-    const newComment = { post_id: postId, username, content };
     
-    const { data, error } = await supabase
-      .from("comments")
-      .insert([newComment])
-      .select()
-      .single();
+    const res = await addComment(postId, username, content);
 
-    if (!error && data) {
-      setComments(prev => [...prev, data]);
+    if (res.success) {
+      // Optimistically add to UI, then let the next fetch from the server refresh if needed.
+      const optimisticComment = {
+        id: crypto.randomUUID(),
+        post_id: postId,
+        username,
+        content,
+        created_at: new Date().toISOString()
+      };
+      setComments(prev => [...prev, optimisticComment as any]);
       setContent("");
     }
     setSubmitting(false);

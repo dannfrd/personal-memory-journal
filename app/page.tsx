@@ -1,4 +1,4 @@
-import { createClient } from "@/src/lib/supabase/client";
+import prisma from "@/src/lib/prisma";
 import { Navbar } from "@/src/components/Navbar";
 import { MemoryGrid } from "@/src/components/MemoryGrid";
 import { EmptyState } from "@/src/components/EmptyState";
@@ -8,12 +8,27 @@ import { IntroSection } from "@/src/components/IntroSection";
 export const revalidate = 0;
 
 export default async function Home() {
-  const supabase = createClient();
+  let memories: any[] = [];
+  let error: any = null;
+  
+  try {
+    const rawMemories = await prisma.memory.findMany({
+      orderBy: { memory_date: 'desc' },
+      include: {
+        _count: {
+          select: { likes: true, comments: true }
+        }
+      }
+    });
 
-  const { data: memories, error } = await supabase
-    .from("posts")
-    .select("*, likes(count), comments(count)")
-    .order("memory_date", { ascending: false });
+    memories = rawMemories.map(m => ({
+      ...m,
+      likes: [{ count: m._count.likes }],
+      comments: [{ count: m._count.comments }]
+    }));
+  } catch (err: any) {
+    error = err;
+  }
 
   const featuredMemories = memories?.slice(0, 5) || [];
 

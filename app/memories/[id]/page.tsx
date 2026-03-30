@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { createClient } from "@/src/lib/supabase/client";
+import prisma from "@/src/lib/prisma";
 import { Navbar } from "@/src/components/Navbar";
 import { formatDate } from "@/src/lib/utils";
 import { MemoryDetailGallery } from "@/src/components/MemoryDetailGallery";
@@ -13,13 +13,28 @@ export const revalidate = 0;
 export default async function MemoryDetail({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const id = resolvedParams.id;
-  const supabase = createClient();
+  let memory: any = null;
+  let error: any = null;
+  
+  try {
+    const rawMemory = await prisma.memory.findUnique({
+      where: { id },
+      include: {
+        images: { select: { imageUrl: true }, orderBy: { sortOrder: 'asc' } },
+        _count: { select: { likes: true } }
+      }
+    });
 
-  const { data: memory, error } = await supabase
-    .from("posts")
-    .select("*, post_images(image_url), likes(count)")
-    .eq("id", id)
-    .single();
+    if (rawMemory) {
+      memory = {
+        ...rawMemory,
+        post_images: rawMemory.images.map(img => ({ image_url: img.imageUrl })),
+        likes: [{ count: rawMemory._count.likes }]
+      };
+    }
+  } catch (err: any) {
+    error = err;
+  }
 
   if (error || !memory) {
     notFound();

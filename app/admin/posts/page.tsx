@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Plus, Edit3 } from "lucide-react";
-import { createClient } from "@/src/lib/supabase/client";
+import prisma from "@/src/lib/prisma";
 import { AdminHeader } from "@/src/components/admin/AdminHeader";
 import { PageContainer } from "@/src/components/PageContainer";
 import { DeleteMemoryButton } from "@/src/components/admin/DeleteMemoryButton";
@@ -10,11 +10,27 @@ import { formatDate } from "@/src/lib/utils";
 export const revalidate = 0;
 
 export default async function AdminPostsPage() {
-  const supabase = createClient();
-  const { data: posts, error } = await supabase
-    .from("posts")
-    .select("*, likes(count), comments(count)")
-    .order("memory_date", { ascending: false });
+  let posts: any[] = [];
+  let error: any = null;
+  
+  try {
+    const rawPosts = await prisma.memory.findMany({
+      orderBy: { memory_date: 'desc' },
+      include: {
+        _count: {
+          select: { likes: true, comments: true }
+        }
+      }
+    });
+
+    posts = rawPosts.map(m => ({
+      ...m,
+      likes: [{ count: m._count.likes }],
+      comments: [{ count: m._count.comments }]
+    }));
+  } catch (err: any) {
+    error = err;
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col font-sans">

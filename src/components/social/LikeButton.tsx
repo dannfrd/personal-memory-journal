@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/src/lib/supabase/client";
+import { checkLikeStatus, likeMemory, unlikeMemory } from "@/app/actions/memories";
 import { Heart } from "lucide-react";
 
 export function LikeButton({ postId, initialCount = 0 }: { postId: string, initialCount?: number }) {
   const [likes, setLikes] = useState(initialCount);
   const [hasLiked, setHasLiked] = useState(false);
-  const supabase = createClient();
 
   useEffect(() => {
     const fetchLikeStatus = async () => {
@@ -17,17 +16,11 @@ export function LikeButton({ postId, initialCount = 0 }: { postId: string, initi
         localStorage.setItem("mj_session_id", sessionId);
       }
 
-      const { data } = await supabase
-        .from("likes")
-        .select("id")
-        .eq("post_id", postId)
-        .eq("session_identifier", sessionId)
-        .single();
-      
-      if (data) setHasLiked(true);
+      const res = await checkLikeStatus(postId, sessionId);
+      if (res.hasLiked) setHasLiked(true);
     };
     fetchLikeStatus();
-  }, [postId, supabase]);
+  }, [postId]);
 
   const handleLike = async () => {
     let sessionId = localStorage.getItem("mj_session_id");
@@ -39,17 +32,11 @@ export function LikeButton({ postId, initialCount = 0 }: { postId: string, initi
     if (hasLiked) {
       setHasLiked(false);
       setLikes(prev => prev - 1);
-      await supabase
-        .from("likes")
-        .delete()
-        .eq("post_id", postId)
-        .eq("session_identifier", sessionId);
+      await unlikeMemory(postId, sessionId);
     } else {
       setHasLiked(true);
       setLikes(prev => prev + 1);
-      await supabase
-        .from("likes")
-        .insert([{ post_id: postId, session_identifier: sessionId }]);
+      await likeMemory(postId, sessionId);
     }
   };
 

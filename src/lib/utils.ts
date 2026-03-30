@@ -7,14 +7,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(dateString: string) {
+export function formatDate(dateInput: string | number | Date | null | undefined) {
+  if (!dateInput) return "";
   try {
-    const date = parseISO(dateString);
+    const date = typeof dateInput === "string" ? parseISO(dateInput) : new Date(dateInput);
     return format(date, "d MMMM yyyy", { locale: id });
   } catch (error) {
-    if (error) {
-      return dateString;
-    }
-    return dateString;
+    return String(dateInput);
   }
 }

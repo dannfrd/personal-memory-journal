@@ -3,13 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { createClient } from "@/src/lib/supabase/client";
+import { loginAdmin } from "@/app/actions/auth";
 
 export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createClient();
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -20,13 +19,10 @@ export function LoginForm() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { success, error: signInError } = await loginAdmin(password);
 
-    if (signInError) {
-      setError(signInError.message);
+    if (!success) {
+      setError(signInError || "Failed to login");
       setLoading(false);
     } else {
       router.push("/admin/posts");

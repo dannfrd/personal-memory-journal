@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/src/lib/supabase/client";
+import prisma from "@/src/lib/prisma";
 import { AdminHeader } from "@/src/components/admin/AdminHeader";
 import { PageContainer } from "@/src/components/PageContainer";
 import { MemoryForm } from "@/src/components/admin/MemoryForm";
@@ -9,13 +9,25 @@ export const revalidate = 0;
 export default async function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const id = resolvedParams.id;
-  const supabase = createClient();
+  let memory: any = null;
+  let error: any = null;
+  try {
+    const rawMemory = await prisma.memory.findUnique({
+      where: { id },
+      include: {
+        images: { select: { imageUrl: true }, orderBy: { sortOrder: 'asc' } }
+      }
+    });
 
-  const { data: memory, error } = await supabase
-    .from("posts")
-    .select("*, post_images(image_url)")
-    .eq("id", id)
-    .single();
+    if (rawMemory) {
+      memory = {
+        ...rawMemory,
+        post_images: rawMemory.images.map(img => ({ image_url: img.imageUrl })),
+      };
+    }
+  } catch (err: any) {
+    error = err;
+  }
 
   if (error || !memory) {
     notFound();

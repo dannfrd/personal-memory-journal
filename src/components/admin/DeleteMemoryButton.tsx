@@ -3,22 +3,21 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Loader2 } from "lucide-react";
-import { createClient } from "@/src/lib/supabase/client";
+import { deleteMemory } from "@/app/actions/memories";
 import { toast } from "sonner";
 
 export function DeleteMemoryButton({ id }: { id: string }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this memory? This action cannot be undone.")) return;
     
     setLoading(true);
-    const { error } = await supabase.from("posts").delete().eq("id", id);
+    const result = await deleteMemory(id);
     
-    if (error) {
-      toast.error(`Failed to delete: ${error.message}`);
+    if (!result.success) {
+      toast.error(`Failed to delete: ${result.error}`);
       setLoading(false);
     } else {
       toast.success("Memory deleted.");
