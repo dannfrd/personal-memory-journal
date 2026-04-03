@@ -1,6 +1,7 @@
 const { createServer } = require("node:http");
 const { URL } = require("node:url");
 const { existsSync } = require("node:fs");
+const { mkdir, readFile, writeFile } = require("node:fs/promises");
 const path = require("node:path");
 const dotenv = require("dotenv");
 const { PrismaClient } = require("@prisma/client");
@@ -13,6 +14,20 @@ if (existsSync(envLocalPath)) {
 }
 
 const prisma = new PrismaClient();
+
+const ALLOWED_UPLOAD_TYPES = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
+
+const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024;
+
+function getUploadToken() {
+  return process.env.UPLOAD_API_TOKEN?.trim() || "";
+}
 
 function sendJson(res, statusCode, payload) {
   res.writeHead(statusCode, {
@@ -28,6 +43,46 @@ function toIsoDate(value) {
   if (!value) return null;
   const date = value instanceof Date ? value : new Date(value);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function sanitizeFileName(value) {
+  const input = typeof value === "string" ? value : "";
+  return path.basename(input).replace(/[^a-zA-Z0-9.\-_]/g, "");
+}
+
+function getMimeTypeFromFileName(fileName) {
+  const ext = path.extname(fileName).toLowerCase();
+  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+  if (ext === ".png") return "image/png";
+  if (ext === ".webp") return "image/webp";
+  if (ext === ".gif") return "image/gif";
+  return "application/octet-stream";
+}
+
+function getHeaderValue(req, name) {
+  const value = req.headers[name.toLowerCase()];
+  if (Array.isArray(value)) return value[0] || "";
+  return value || "";
+}
+
+function getUploadBaseUrl() {
+  const fromEnv = process.env.PUBLIC_UPLOAD_BASE_URL?.trim() || process.env.VPS_API_BASE_URL?.trim() || "";
+  return fromEnv.replace(/\/+$/, "");
+}
+
+async function readBufferBody(req, maxBytes) {
+  const chunks = [];
+  let total = 0;
+  for await (const chunk of req) {
+    total += chunk.length;
+    if (total > maxBytes) {
+      const error = new Error("Payload too large");
+      error.code = "PAYLOAD_TOO_LARGE";
+      throw error;
+    }
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
 }
 
 function mapMemory(raw) {
@@ -111,6 +166,86 @@ const server = createServer(async (req, res) => {
   const { pathname } = url;
 
   try {
+    const uploadFileName = parseId(pathname, "/uploads/");
+
+    if (req.method === "GET" && uploadFileName) {
+      const safeName = sanitizeFileName(uploadFileName);
+      if (!safeName) {
+        sendJson(res, 400, { error: "Invalid filename" });
+        return;
+      }
+
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      const filePath = path.resolve(uploadDir, safeName);
+      if (!filePath.startsWith(path.resolve(uploadDir) + path.sep) && filePath !== path.resolve(uploadDir, safeName)) {
+        sendJson(res, 400, { error: "Invalid filename" });
+        return;
+      }
+
+      try {
+        const fileBuffer = await readFile(filePath);
+        res.writeHead(200, {
+          "Content-Type": getMimeTypeFromFileName(safeName),
+          "Cache-Control": "public, max-age=31536000, immutable",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(fileBuffer);
+      } catch (error) {
+        if (error && error.code === "ENOENT") {
+          sendJson(res, 404, { error: "File not found" });
+          return;
+        }
+        throw error;
+      }
+      return;
+    }
+
+    if (req.method === "POST" && pathname === "/uploads") {
+      const expectedToken = getUploadToken();
+      const incomingToken = getHeaderValue(req, "x-upload-token");
+      if (expectedToken && incomingToken !== expectedToken) {
+        sendJson(res, 401, { error: "Unauthorized upload request" });
+        return;
+      }
+
+      const contentType = getHeaderValue(req, "content-type").split(";")[0].trim().toLowerCase();
+      if (!ALLOWED_UPLOAD_TYPES.has(contentType)) {
+        sendJson(res, 400, { error: "Invalid file type" });
+        return;
+      }
+
+      const incomingFileName = getHeaderValue(req, "x-file-name");
+      const safeName = sanitizeFileName(incomingFileName || `upload-${Date.now()}`);
+      if (!safeName) {
+        sendJson(res, 400, { error: "Invalid filename" });
+        return;
+      }
+
+      const fileBuffer = await readBufferBody(req, MAX_UPLOAD_SIZE_BYTES);
+      if (fileBuffer.length === 0) {
+        sendJson(res, 400, { error: "No file uploaded" });
+        return;
+      }
+
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      await mkdir(uploadDir, { recursive: true });
+
+      const filePath = path.resolve(uploadDir, safeName);
+      if (!filePath.startsWith(path.resolve(uploadDir) + path.sep) && filePath !== path.resolve(uploadDir, safeName)) {
+        sendJson(res, 400, { error: "Invalid filename" });
+        return;
+      }
+
+      await writeFile(filePath, fileBuffer);
+
+      const encodedName = encodeURIComponent(safeName);
+      const uploadBaseUrl = getUploadBaseUrl();
+      const url = uploadBaseUrl ? `${uploadBaseUrl}/uploads/${encodedName}` : `/uploads/${encodedName}`;
+
+      sendJson(res, 201, { url, filename: safeName });
+      return;
+    }
+
     if (req.method === "HEAD" && pathname === "/health") {
       res.writeHead(200, {
         "Content-Type": "application/json",
@@ -368,6 +503,11 @@ const server = createServer(async (req, res) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     const code = error && typeof error === "object" ? error.code : undefined;
+
+    if (code === "PAYLOAD_TOO_LARGE") {
+      sendJson(res, 413, { error: "File too large. Maximum size is 10 MB." });
+      return;
+    }
 
     if (code === "P2025") {
       sendJson(res, 404, { error: "Data not found" });

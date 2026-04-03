@@ -1,12 +1,19 @@
 import { ADMIN_COOKIE_NAME, verifyAdminToken } from '@/src/lib/adminAuth';
-import { mkdir, writeFile } from 'fs/promises';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { basename, join } from 'path';
+import { basename } from 'path';
 
 // Allowed MIME types
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+
+function getVpsApiBaseUrl() {
+  const baseUrl = process.env.VPS_API_BASE_URL?.trim();
+  if (!baseUrl) {
+    throw new Error('VPS_API_BASE_URL is not set');
+  }
+  return baseUrl.replace(/\/+$/, '');
+}
 
 export async function POST(request: Request) {
   // 1. Auth check — only logged-in admin can upload
@@ -48,27 +55,43 @@ export async function POST(request: Request) {
 
     // 4. Sanitize filename — strip directory traversal chars, keep only safe chars
     const safeName = basename(file.name).replace(/[^a-zA-Z0-9.\-_]/g, '');
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const filename = `${uniqueSuffix}-${safeName}`;
-
-    // 5. Ensure upload directory exists
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
-
-    // 6. Ensure path stays within uploadDir (prevent path traversal)
-    const filePath = join(uploadDir, filename);
-    if (!filePath.startsWith(uploadDir)) {
+    if (!safeName) {
       return NextResponse.json(
         { success: false, error: 'Invalid filename.' },
         { status: 400 }
       );
     }
 
-    await writeFile(filePath, buffer);
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const filename = `${uniqueSuffix}-${safeName}`;
+
+    const vpsUploadUrl = `${getVpsApiBaseUrl()}/uploads`;
+    const uploadToken = process.env.UPLOAD_API_TOKEN?.trim();
+    const uploadRes = await fetch(vpsUploadUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': file.type || 'application/octet-stream',
+        'X-File-Name': filename,
+        ...(uploadToken ? { 'X-Upload-Token': uploadToken } : {}),
+      },
+      body: buffer,
+      cache: 'no-store',
+    });
+
+    const responseBody = await uploadRes.json().catch(() => ({} as { url?: string; error?: string }));
+    if (!uploadRes.ok || !responseBody.url) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: responseBody.error || 'Upload to VPS failed',
+        },
+        { status: uploadRes.status || 502 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      url: `/uploads/${filename}`
+      url: responseBody.url
     });
   } catch (error) {
     console.error('Error uploading file:', error);
