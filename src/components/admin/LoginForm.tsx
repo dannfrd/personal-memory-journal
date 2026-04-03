@@ -19,7 +19,7 @@ export function LoginForm() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    const { success, error: signInError } = await loginAdmin(password);
+    const { success, error: signInError } = await loginAdmin(email, password);
 
     if (!success) {
       setError(signInError || "Failed to login");

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PageContainer } from "../PageContainer";
-import { LogOut } from "lucide-react";
+import { BookImage, MessageSquare } from "lucide-react";
+import { SignOutButton } from "./SignOutButton";
 
 export function AdminHeader() {
   return (
@@ -11,15 +12,18 @@ export function AdminHeader() {
             Memory Journal <span className="text-foreground/40 font-normal ml-1">Admin</span>
           </Link>
           <nav className="flex items-center gap-6 text-sm font-medium">
+            <Link href="/admin/posts" className="flex items-center gap-1.5 text-foreground/60 transition-colors hover:text-foreground">
+              <BookImage className="h-4 w-4" />
+              Memories
+            </Link>
+            <Link href="/admin/comments" className="flex items-center gap-1.5 text-foreground/60 transition-colors hover:text-foreground">
+              <MessageSquare className="h-4 w-4" />
+              Comments
+            </Link>
             <Link href="/" className="text-foreground/60 transition-colors hover:text-foreground">
               View Gallery
             </Link>
-            <form action="/auth/signout" method="post">
-              <button type="submit" className="flex items-center gap-2 text-foreground/60 transition-colors hover:text-foreground">
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </button>
-            </form>
+            <SignOutButton />
           </nav>
         </div>
       </PageContainer>

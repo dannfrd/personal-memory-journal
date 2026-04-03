@@ -1,12 +1,13 @@
 import { LoginForm } from "@/src/components/admin/LoginForm";
-import { redirect } from "next/navigation";
+import { ADMIN_COOKIE_NAME, verifyAdminToken } from "@/src/lib/adminAuth";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function LoginPage() {
   const cookieStore = await cookies();
-  const token = cookieStore.get("admin_token");
+  const token = cookieStore.get(ADMIN_COOKIE_NAME);
 
-  if (token && token.value === "authenticated") {
+  if (verifyAdminToken(token?.value)) {
     redirect("/admin/posts");
   }
 

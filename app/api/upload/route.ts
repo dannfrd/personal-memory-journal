@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join, basename } from 'path';
+import { ADMIN_COOKIE_NAME, verifyAdminToken } from '@/src/lib/adminAuth';
+import { mkdir, writeFile } from 'fs/promises';
 import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
+import { basename, join } from 'path';
 
 // Allowed MIME types
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
@@ -10,8 +11,8 @@ const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 export async function POST(request: Request) {
   // 1. Auth check — only logged-in admin can upload
   const cookieStore = await cookies();
-  const adminToken = cookieStore.get('admin_token');
-  if (!adminToken || adminToken.value !== 'authenticated') {
+  const adminToken = cookieStore.get(ADMIN_COOKIE_NAME);
+  if (!verifyAdminToken(adminToken?.value)) {
     return NextResponse.json(
       { success: false, error: 'Unauthorized' },
       { status: 401 }

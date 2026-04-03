@@ -11,11 +11,11 @@ import { Memory } from "@/src/types";
 import { formatDate } from "@/src/lib/utils";
 
 const PALETTES = [
-  { bg: "bg-[#EAE5DF]", text: "text-[#2B303A]", imgBg: "bg-[#D2CBC0]" }, // Sand
-  { bg: "bg-[#3D5257]", text: "text-[#F2F0EB]", imgBg: "bg-[#2A393C]" }, // Slate 
-  { bg: "bg-[#6A412F]", text: "text-[#F2F0EB]", imgBg: "bg-[#4F3022]" }, // Chocolate 
-  { bg: "bg-[#C4B7AB]", text: "text-[#3D3B3A]", imgBg: "bg-[#A6998D]" }, // Rose Beige
-  { bg: "bg-[#1C1E1F]", text: "text-[#EAE5DF]", imgBg: "bg-[#0E0F10]" }, // Deep Charcoal
+  { bg: "bg-[#EAE5DF]", text: "text-[#2B303A]", imgBg: "bg-[#D2CBC0]", bgHex: "#EAE5DF", textHex: "#2B303A" }, // Sand
+  { bg: "bg-[#3D5257]", text: "text-[#F2F0EB]", imgBg: "bg-[#2A393C]", bgHex: "#3D5257", textHex: "#F2F0EB" }, // Slate 
+  { bg: "bg-[#6A412F]", text: "text-[#F2F0EB]", imgBg: "bg-[#4F3022]", bgHex: "#6A412F", textHex: "#F2F0EB" }, // Chocolate 
+  { bg: "bg-[#C4B7AB]", text: "text-[#3D3B3A]", imgBg: "bg-[#A6998D]", bgHex: "#C4B7AB", textHex: "#3D3B3A" }, // Rose Beige
+  { bg: "bg-[#1C1E1F]", text: "text-[#EAE5DF]", imgBg: "bg-[#0E0F10]", bgHex: "#1C1E1F", textHex: "#EAE5DF" }, // Deep Charcoal
 ];
 
 export function MemoryCard({ memory, index = 0 }: { memory: Memory; index?: number }) {
@@ -27,6 +27,10 @@ export function MemoryCard({ memory, index = 0 }: { memory: Memory; index?: numb
   return (
     <section 
       className={`relative flex min-h-screen w-full flex-col lg:flex-row overflow-hidden ${palette.bg} ${palette.text}`}
+      style={{
+        "--btn-hover-bg": palette.textHex,
+        "--btn-hover-text": palette.bgHex,
+      } as React.CSSProperties}
     >
       {/* Content Side */}
       <div className={`flex w-full flex-1 flex-col justify-center px-8 py-24 sm:px-16 lg:w-1/2 lg:px-24 xl:px-32 ${!isEven ? 'lg:order-2' : ''}`}>
@@ -84,7 +88,10 @@ export function MemoryCard({ memory, index = 0 }: { memory: Memory; index?: numb
             )}
           </div>
           
-          <Link href={`/memories/${memory.id}`} className="inline-flex items-center gap-4 border border-current rounded-full px-8 py-4 text-sm font-bold uppercase tracking-[0.2em] transition-all hover:bg-current hover:text-white hover:bg-opacity-10 dark:hover:text-black dark:hover:bg-opacity-100">
+          <Link 
+            href={`/memories/${memory.id}`} 
+            className="inline-flex items-center gap-4 border border-current rounded-full px-8 py-4 text-sm font-bold uppercase tracking-[0.2em] transition-all hover:bg-(--btn-hover-bg) hover:text-(--btn-hover-text) hover:border-(--btn-hover-bg)"
+          >
             View Collection
           </Link>
           
@@ -99,9 +106,15 @@ export function MemoryCard({ memory, index = 0 }: { memory: Memory; index?: numb
 
       {/* Image Side */}
       <div className={`relative flex w-full min-h-[60vh] lg:h-auto lg:w-1/2 items-center justify-center p-8 sm:p-16 lg:p-24 ${palette.imgBg}`}>
-        <div className="relative w-full aspect-[4/5] max-h-[85vh] shadow-2xl overflow-hidden rounded-sm">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "-10%" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative w-full aspect-[4/5] max-h-[85vh] shadow-2xl overflow-hidden rounded-sm"
+        >
           <MemoryDetailGallery coverImage={memory.cover_image_url} images={memory.post_images} memoryId={memory.id} />
-        </div>
+        </motion.div>
       </div>
     </section>
   );

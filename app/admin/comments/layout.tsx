@@ -2,11 +2,10 @@ import { ADMIN_COOKIE_NAME, verifyAdminToken } from "@/src/lib/adminAuth";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-export default async function AdminPostsLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminCommentsLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_COOKIE_NAME);
 
-  // Jika pengunjung tidak punya token sesi, tendang ke halaman login
   if (!verifyAdminToken(token?.value)) {
     redirect("/admin/login");
   }

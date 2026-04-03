@@ -39,11 +39,12 @@ export async function saveMemory(data: MemoryData, postId?: string) {
       });
       
       // Update gallery (delete old and re-insert)
-      await prisma.postImage.deleteMany({ where: { postId: postId } });
+      const existingPostId = postId; // narrowed to string by the if(postId) guard above
+      await prisma.postImage.deleteMany({ where: { postId: existingPostId } });
       if (galleryImages && galleryImages.length > 0) {
         await prisma.postImage.createMany({
           data: galleryImages.map((url: string, index: number) => ({
-            postId,
+            postId: existingPostId,
             imageUrl: url,
             sortOrder: index + 1
           }))
@@ -130,9 +131,9 @@ export async function addComment(postId: string, username: string, content: stri
     await prisma.comment.create({
       data: {
         postId,
-        parentId,
         username,
-        content
+        content,
+        ...(parentId ? { parent: { connect: { id: parentId } } } : {})
       }
     })
     revalidatePath(`/memories/${postId}`)
@@ -152,6 +153,20 @@ export async function checkLikeStatus(postId: string, sessionIdentifier: string)
     return { hasLiked: !!like };
   } catch (error) {
     return { hasLiked: false };
+  }
+}
+
+export async function deleteComment(commentId: string) {
+  try {
+    const comment = await prisma.comment.findUnique({ where: { id: commentId } });
+    await prisma.comment.delete({ where: { id: commentId } });
+    if (comment) {
+      revalidatePath(`/memories/${comment.postId}`);
+    }
+    revalidatePath('/admin/comments');
+    return { success: true };
+  } catch (error: unknown) {
+    return { success: false, error: getErrorMessage(error) };
   }
 }
 

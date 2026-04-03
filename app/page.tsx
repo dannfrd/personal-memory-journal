@@ -44,8 +44,12 @@ export default async function Home() {
       <Navbar />
       
       <main className="w-full h-full m-0 p-0">
-        {featuredMemories.length > 0 && <HeroSlider memories={featuredMemories} />}
-        <IntroSection />
+        <div id="home">
+          {featuredMemories.length > 0 && <HeroSlider memories={featuredMemories} />}
+        </div>
+        <div id="journal">
+          <IntroSection />
+        </div>
 
         {error && (
           <div className="py-20 px-8 max-w-5xl mx-auto min-h-[50vh]">
@@ -56,9 +60,10 @@ export default async function Home() {
           </div>
         )}
 
-        {!error && memories && memories.length > 0 ? (
-          <MemoryGrid memories={memories} />
-        ) : !error ? (
+        <div id="gallery">
+          {!error && memories && memories.length > 0 ? (
+            <MemoryGrid memories={memories} />
+          ) : !error ? (
           <div className="py-40 px-8 max-w-5xl mx-auto min-h-[50vh] flex items-center justify-center">
             <EmptyState 
               title="Blank Canvas"
@@ -66,6 +71,7 @@ export default async function Home() {
             />
           </div>
         ) : null}
+        </div>
       </main>
     </div>
   );
