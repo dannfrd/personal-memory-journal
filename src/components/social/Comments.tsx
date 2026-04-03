@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getComments, addComment } from "@/app/actions/memories";
-import { Comment } from "@/src/types";
+import { addComment, getComments } from "@/app/actions/memories";
 import { formatDate } from "@/src/lib/utils";
-import { Loader2, CornerDownRight } from "lucide-react";
+import { Comment } from "@/src/types";
+import { CornerDownRight, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 // Shared button style: solid fill on hover, always readable
 const btnClass =
@@ -126,7 +126,7 @@ export function Comments({ postId }: { postId: string }) {
                       replyToId === comment.id ? null : comment.id
                     )
                   }
-                  className="text-xs font-bold tracking-[0.2em] uppercase opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity"
+                  className="text-xs font-bold tracking-[0.2em] uppercase opacity-60 transition-opacity hover:!opacity-100 sm:opacity-0 sm:group-hover:opacity-60"
                 >
                   {replyToId === comment.id ? "Cancel" : "Reply"}
                 </button>

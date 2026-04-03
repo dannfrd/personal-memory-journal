@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
+import { formatDate } from "@/src/lib/utils";
+import { Memory } from "@/src/types";
 import { motion } from "framer-motion";
+import { MessageCircle } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { MemoryDetailGallery } from "./MemoryDetailGallery";
-import { LikeButton } from "./social/LikeButton";
 import { Comments } from "./social/Comments";
-import { MessageCircle } from "lucide-react";
-import { Memory } from "@/src/types";
-import { formatDate } from "@/src/lib/utils";
+import { LikeButton } from "./social/LikeButton";
 
 const PALETTES = [
   { bg: "bg-[#EAE5DF]", text: "text-[#2B303A]", imgBg: "bg-[#D2CBC0]", bgHex: "#EAE5DF", textHex: "#2B303A" }, // Sand
@@ -53,7 +53,7 @@ export function MemoryCard({ memory, index = 0 }: { memory: Memory; index?: numb
                 {memory.title}
               </h3>
             )}
-            <h2 className="mb-10 font-serif text-5xl leading-[1.05] tracking-tight sm:text-6xl transition-opacity group-hover:opacity-80">
+            <h2 className="mb-10 font-serif text-4xl leading-[1.05] tracking-tight sm:text-5xl xl:text-6xl transition-opacity group-hover:opacity-80">
               {memory.description?.length > 80 ? memory.description.substring(0, 80) + "..." : memory.description}
             </h2>
           </Link>
