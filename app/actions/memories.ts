@@ -133,7 +133,7 @@ export async function addComment(postId: string, username: string, content: stri
         postId,
         username,
         content,
-        ...(parentId ? { parent: { connect: { id: parentId } } } : {})
+        ...(parentId ? { parentId } : {})
       }
     })
     revalidatePath(`/memories/${postId}`)
