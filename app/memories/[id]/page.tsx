@@ -1,13 +1,13 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
-import { Navbar } from "@/src/components/Navbar";
-import { formatDate } from "@/src/lib/utils";
 import { MemoryDetailGallery } from "@/src/components/MemoryDetailGallery";
-import { LikeButton } from "@/src/components/social/LikeButton";
+import { Navbar } from "@/src/components/Navbar";
 import { CommentModalButton } from "@/src/components/social/CommentModalButton";
+import { LikeButton } from "@/src/components/social/LikeButton";
+import { formatDate } from "@/src/lib/utils";
 import { fetchMemoryById } from "@/src/lib/vpsMemoryApi";
 import type { Memory } from "@/src/types";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 export const revalidate = 0;
 
@@ -87,7 +87,7 @@ export default async function MemoryDetail({ params }: { params: Promise<{ id: s
         </div>
 
         {/* Right Sticky Image Gallery Side */}
-        <div className="relative w-full min-h-[60vh] lg:h-screen lg:w-1/2 lg:sticky lg:top-0 order-first lg:order-last bg-[#D2CBC0]">
+        <div className="relative order-first h-[60vh] w-full sm:h-[70vh] lg:order-last lg:h-screen lg:w-1/2 lg:sticky lg:top-0 bg-[#D2CBC0]">
           <MemoryDetailGallery coverImage={memory.cover_image_url} images={memory.post_images ?? []} />
         </div>
       </main>
