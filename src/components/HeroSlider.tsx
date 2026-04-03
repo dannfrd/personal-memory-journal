@@ -19,7 +19,7 @@ export function HeroSlider({ memories }: { memories: Memory[] }) {
   if (!memories || memories.length === 0) return null;
 
   return (
-    <section className="relative h-[62vh] min-h-[360px] w-full overflow-hidden bg-[#1C1E1F] sm:h-[85vh]">
+    <section className="relative w-full overflow-hidden bg-[#1C1E1F]">
       <AnimatePresence initial={false}>
         <motion.div
           key={currentIndex}
@@ -27,18 +27,17 @@ export function HeroSlider({ memories }: { memories: Memory[] }) {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.5, ease: "easeInOut" }}
-          className="absolute inset-0"
+          className="relative h-[52svh] min-h-[280px] max-h-[520px] sm:h-[85vh]"
         >
           <Image
             src={memories[currentIndex].cover_image_url}
             alt="Featured Memory"
             fill
-            className="object-contain object-center sm:object-cover"
-            sizes="100vw"
+            className="object-cover object-center"
+            sizes="(max-width: 640px) 100vw, 100vw"
             priority
             unoptimized
           />
-          {/* Subtle gradient overlay */}
           <div className="absolute inset-0 bg-black/20" />
         </motion.div>
       </AnimatePresence>
