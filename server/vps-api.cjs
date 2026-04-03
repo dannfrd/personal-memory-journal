@@ -111,6 +111,17 @@ const server = createServer(async (req, res) => {
   const { pathname } = url;
 
   try {
+    if (req.method === "HEAD" && pathname === "/health") {
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      });
+      res.end();
+      return;
+    }
+
     if (req.method === "GET" && pathname === "/health") {
       sendJson(res, 200, { status: "ok" });
       return;
