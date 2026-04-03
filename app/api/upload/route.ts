@@ -15,6 +15,13 @@ function getVpsApiBaseUrl() {
   return baseUrl.replace(/\/+$/, '');
 }
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  return String(error);
+}
+
 export async function POST(request: Request) {
   // 1. Auth check — only logged-in admin can upload
   const cookieStore = await cookies();
@@ -67,16 +74,26 @@ export async function POST(request: Request) {
 
     const vpsUploadUrl = `${getVpsApiBaseUrl()}/uploads`;
     const uploadToken = process.env.UPLOAD_API_TOKEN?.trim();
-    const uploadRes = await fetch(vpsUploadUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': file.type || 'application/octet-stream',
-        'X-File-Name': filename,
-        ...(uploadToken ? { 'X-Upload-Token': uploadToken } : {}),
-      },
-      body: buffer,
-      cache: 'no-store',
-    });
+    let uploadRes: Response;
+    try {
+      uploadRes = await fetch(vpsUploadUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+          'X-File-Name': filename,
+          ...(uploadToken ? { 'X-Upload-Token': uploadToken } : {}),
+        },
+        body: buffer,
+        cache: 'no-store',
+      });
+    } catch (error) {
+      const message = `Cannot reach VPS upload endpoint (${vpsUploadUrl}). ${getErrorMessage(error)}`;
+      console.error('Error uploading file:', message);
+      return NextResponse.json(
+        { success: false, error: message },
+        { status: 502 }
+      );
+    }
 
     const responseBody = await uploadRes.json().catch(() => ({} as { url?: string; error?: string }));
     if (!uploadRes.ok || !responseBody.url) {
@@ -94,9 +111,10 @@ export async function POST(request: Request) {
       url: responseBody.url
     });
   } catch (error) {
-    console.error('Error uploading file:', error);
+    const message = getErrorMessage(error);
+    console.error('Error uploading file:', message);
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: message },
       { status: 500 }
     );
   }

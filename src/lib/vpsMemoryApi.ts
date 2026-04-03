@@ -87,17 +87,31 @@ function buildUrl(path: string): string {
   return `${getApiBaseUrl()}/${normalized}`;
 }
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  return String(error);
+}
+
 async function requestJson<T>(path: string, init: RequestInit = {}, allowNotFound = false): Promise<T | null> {
   const headers = new Headers(init.headers);
   if (init.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
 
-  const res = await fetch(buildUrl(path), {
-    ...init,
-    headers,
-    cache: "no-store",
-  });
+  const url = buildUrl(path);
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...init,
+      headers,
+      cache: "no-store",
+    });
+  } catch (error) {
+    throw new Error(`Cannot reach VPS API at ${url}. ${getErrorMessage(error)}`);
+  }
 
   if (allowNotFound && res.status === 404) {
     return null;
