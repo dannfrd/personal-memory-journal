@@ -1,15 +1,26 @@
 "use server"
 
-import prisma from "@/src/lib/prisma"
 import { revalidatePath } from "next/cache"
+import {
+  addLike,
+  addMemoryComment,
+  createMemory,
+  fetchMemoryComments,
+  getLikeStatus,
+  removeComment,
+  removeLike,
+  removeMemory,
+  updateMemory,
+  type MemoryMutationPayload,
+} from "@/src/lib/vpsMemoryApi"
 
-interface MemoryData {
-  title: string
+interface MemoryData extends MemoryMutationPayload {
+  title?: string | null
   coverImageUrl: string
   description: string
   memoryDate: string
-  location?: string
-  mood?: string
+  location?: string | null
+  mood?: string | null
   galleryImages?: string[]
 }
 
@@ -20,55 +31,10 @@ function getErrorMessage(error: unknown): string {
 
 export async function saveMemory(data: MemoryData, postId?: string) {
   try {
-    const { 
-      title, coverImageUrl, description, memoryDate, location, mood, galleryImages 
-    } = data;
-
     if (postId) {
-      // Update existing post
-      await prisma.memory.update({
-        where: { id: postId },
-        data: {
-          title,
-          cover_image_url: coverImageUrl,
-          description,
-          memory_date: new Date(memoryDate),
-          location,
-          mood
-        }
-      });
-      
-      // Update gallery (delete old and re-insert)
-      const existingPostId = postId; // narrowed to string by the if(postId) guard above
-      await prisma.postImage.deleteMany({ where: { postId: existingPostId } });
-      if (galleryImages && galleryImages.length > 0) {
-        await prisma.postImage.createMany({
-          data: galleryImages.map((url: string, index: number) => ({
-            postId: existingPostId,
-            imageUrl: url,
-            sortOrder: index + 1
-          }))
-        });
-      }
+      await updateMemory(postId, data);
     } else {
-      // Create new post
-      const newPost = await prisma.memory.create({
-        data: {
-          title,
-          cover_image_url: coverImageUrl,
-          description,
-          memory_date: new Date(memoryDate),
-          location,
-          mood,
-          images: {
-            create: galleryImages?.map((url: string, index: number) => ({
-              imageUrl: url,
-              sortOrder: index + 1
-            })) || []
-          }
-        }
-      });
-      postId = newPost.id;
+      postId = await createMemory(data) ?? undefined;
     }
 
     revalidatePath('/')
@@ -82,9 +48,7 @@ export async function saveMemory(data: MemoryData, postId?: string) {
 
 export async function deleteMemory(postId: string) {
   try {
-    await prisma.memory.delete({
-      where: { id: postId }
-    })
+    await removeMemory(postId)
     revalidatePath('/')
     revalidatePath('/admin/posts')
     return { success: true }
@@ -96,12 +60,7 @@ export async function deleteMemory(postId: string) {
 
 export async function likeMemory(postId: string, sessionIdentifier: string) {
   try {
-    await prisma.like.create({
-      data: {
-        postId,
-        sessionIdentifier
-      }
-    })
+    await addLike(postId, sessionIdentifier)
     revalidatePath(`/memories/${postId}`)
     return { success: true }
   } catch (error: unknown) {
@@ -111,14 +70,7 @@ export async function likeMemory(postId: string, sessionIdentifier: string) {
 
 export async function unlikeMemory(postId: string, sessionIdentifier: string) {
   try {
-    await prisma.like.delete({
-      where: {
-        postId_sessionIdentifier: {
-          postId,
-          sessionIdentifier
-        }
-      }
-    })
+    await removeLike(postId, sessionIdentifier)
     revalidatePath(`/memories/${postId}`)
     return { success: true }
   } catch (error: unknown) {
@@ -128,14 +80,7 @@ export async function unlikeMemory(postId: string, sessionIdentifier: string) {
 
 export async function addComment(postId: string, username: string, content: string, parentId?: string | null) {
   try {
-    await prisma.comment.create({
-      data: {
-        postId,
-        username,
-        content,
-        ...(parentId ? { parentId } : {})
-      }
-    })
+    await addMemoryComment(postId, username, content, parentId)
     revalidatePath(`/memories/${postId}`)
     return { success: true }
   } catch (error: unknown) {
@@ -145,25 +90,20 @@ export async function addComment(postId: string, username: string, content: stri
 
 export async function checkLikeStatus(postId: string, sessionIdentifier: string) {
   try {
-    const like = await prisma.like.findUnique({
-      where: {
-        postId_sessionIdentifier: { postId, sessionIdentifier }
-      }
-    });
-    return { hasLiked: !!like };
-  } catch (error) {
+    const hasLiked = await getLikeStatus(postId, sessionIdentifier)
+    return { hasLiked };
+  } catch {
     return { hasLiked: false };
   }
 }
 
 export async function deleteComment(commentId: string) {
   try {
-    const comment = await prisma.comment.findUnique({ where: { id: commentId } });
-    await prisma.comment.delete({ where: { id: commentId } });
-    if (comment) {
-      revalidatePath(`/memories/${comment.postId}`);
+    const postId = await removeComment(commentId)
+    if (postId) {
+      revalidatePath(`/memories/${postId}`)
     }
-    revalidatePath('/admin/comments');
+    revalidatePath('/admin/comments')
     return { success: true };
   } catch (error: unknown) {
     return { success: false, error: getErrorMessage(error) };
@@ -172,19 +112,16 @@ export async function deleteComment(commentId: string) {
 
 export async function getComments(postId: string) {
   try {
-    const comments = await prisma.comment.findMany({
-      where: { postId },
-      orderBy: { createdAt: 'asc' }
-    });
+    const comments = await fetchMemoryComments(postId)
     return { 
       success: true, 
       comments: comments.map(c => ({
         id: c.id, 
         username: c.username, 
         content: c.content, 
-        post_id: c.postId,
-        parent_id: c.parentId,
-        created_at: c.createdAt.toISOString()
+        post_id: c.post_id,
+        parent_id: c.parent_id,
+        created_at: c.created_at
       })) 
     };
   } catch (error: unknown) {

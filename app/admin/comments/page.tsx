@@ -1,40 +1,25 @@
-import prisma from "@/src/lib/prisma";
 import { AdminHeader } from "@/src/components/admin/AdminHeader";
 import { PageContainer } from "@/src/components/PageContainer";
 import { DeleteCommentButton } from "@/src/components/admin/DeleteCommentButton";
 import { formatDate } from "@/src/lib/utils";
 import { CornerDownRight, MessageCircle } from "lucide-react";
 import Link from "next/link";
+import { fetchAdminComments, type AdminComment } from "@/src/lib/vpsMemoryApi";
 
 export const revalidate = 0;
 
 export default async function AdminCommentsPage() {
-  let comments: {
-    id: string;
-    username: string;
-    content: string;
-    parentId: string | null;
-    postId: string;
-    createdAt: Date;
-    memory: { id: string; title: string | null; description: string } | null;
-  }[] = [];
+  let comments: AdminComment[] = [];
   let error: Error | null = null;
 
   try {
-    comments = await prisma.comment.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        memory: {
-          select: { id: true, title: true, description: true },
-        },
-      },
-    });
+    comments = await fetchAdminComments();
   } catch (err: unknown) {
     error = err instanceof Error ? err : new Error(String(err));
   }
 
-  const totalReplies = comments.filter((c) => !!c.parentId).length;
-  const totalMain = comments.filter((c) => !c.parentId).length;
+  const totalReplies = comments.filter((c) => !!c.parent_id).length;
+  const totalMain = comments.filter((c) => !c.parent_id).length;
 
   return (
     <div className="min-h-screen bg-background flex flex-col font-sans">
@@ -91,14 +76,14 @@ export default async function AdminCommentsPage() {
                         {/* Username */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            {comment.parentId && (
+                            {comment.parent_id && (
                               <CornerDownRight className="h-3 w-3 shrink-0 text-foreground/30" />
                             )}
                             <span className="font-semibold text-foreground/80 truncate">
                               {comment.username}
                             </span>
                           </div>
-                          {comment.parentId && (
+                          {comment.parent_id && (
                             <span className="mt-0.5 block text-[10px] uppercase tracking-widest text-foreground/40 pl-5">
                               Reply
                             </span>
@@ -129,7 +114,7 @@ export default async function AdminCommentsPage() {
 
                         {/* Date */}
                         <td className="px-6 py-4 text-xs text-foreground/50 whitespace-nowrap">
-                          {formatDate(comment.createdAt)}
+                          {formatDate(comment.created_at)}
                         </td>
 
                         {/* Action */}

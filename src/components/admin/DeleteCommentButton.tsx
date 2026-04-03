@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Trash2, Loader2 } from "lucide-react";
 import { deleteComment } from "@/app/actions/memories";
 
 export function DeleteCommentButton({ commentId }: { commentId: string }) {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleDelete = async () => {
     if (!confirm("Hapus komentar ini? Tindakan ini tidak bisa dibatalkan.")) return;
@@ -14,8 +16,9 @@ export function DeleteCommentButton({ commentId }: { commentId: string }) {
     if (!res.success) {
       alert("Gagal menghapus komentar: " + res.error);
       setLoading(false);
+      return;
     }
-    // on success, revalidatePath will refresh the page automatically
+    router.refresh();
   };
 
   return (

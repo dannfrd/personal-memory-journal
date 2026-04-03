@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
-import prisma from "@/src/lib/prisma";
 import { AdminHeader } from "@/src/components/admin/AdminHeader";
 import { PageContainer } from "@/src/components/PageContainer";
 import { MemoryForm } from "@/src/components/admin/MemoryForm";
 import type { Memory } from "@/src/types";
+import { fetchMemoryById } from "@/src/lib/vpsMemoryApi";
 
 export const revalidate = 0;
 
@@ -13,22 +13,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
   let memory: Memory | null = null;
   let error: Error | null = null;
   try {
-    const rawMemory = await prisma.memory.findUnique({
-      where: { id },
-      include: {
-        images: { select: { imageUrl: true }, orderBy: { sortOrder: 'asc' } }
-      }
-    });
-
-    if (rawMemory) {
-      memory = {
-        ...rawMemory,
-        memory_date: rawMemory.memory_date.toISOString(),
-        createdAt: rawMemory.createdAt.toISOString(),
-        updatedAt: rawMemory.updatedAt.toISOString(),
-        post_images: rawMemory.images.map(img => ({ image_url: img.imageUrl })),
-      } as unknown as Memory;
-    }
+    memory = await fetchMemoryById(id);
   } catch (err) {
     error = err instanceof Error ? err : new Error(String(err));
   }

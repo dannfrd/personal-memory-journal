@@ -1,35 +1,23 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Plus, Edit3 } from "lucide-react";
-import prisma from "@/src/lib/prisma";
 import { AdminHeader } from "@/src/components/admin/AdminHeader";
 import { PageContainer } from "@/src/components/PageContainer";
 import { DeleteMemoryButton } from "@/src/components/admin/DeleteMemoryButton";
 import { formatDate } from "@/src/lib/utils";
+import { fetchMemories } from "@/src/lib/vpsMemoryApi";
+import type { Memory } from "@/src/types";
 
 export const revalidate = 0;
 
 export default async function AdminPostsPage() {
-  let posts: any[] = [];
-  let error: any = null;
+  let posts: Memory[] = [];
+  let error: Error | null = null;
   
   try {
-    const rawPosts = await prisma.memory.findMany({
-      orderBy: { memory_date: 'desc' },
-      include: {
-        _count: {
-          select: { likes: true, comments: true }
-        }
-      }
-    });
-
-    posts = rawPosts.map(m => ({
-      ...m,
-      likes: [{ count: m._count.likes }],
-      comments: [{ count: m._count.comments }]
-    }));
-  } catch (err: any) {
-    error = err;
+    posts = await fetchMemories();
+  } catch (err: unknown) {
+    error = err instanceof Error ? err : new Error(String(err));
   }
 
   return (

@@ -1,50 +1,24 @@
 import { notFound } from "next/navigation";
-import type { Prisma } from "@prisma/client";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import prisma from "@/src/lib/prisma";
 import { Navbar } from "@/src/components/Navbar";
 import { formatDate } from "@/src/lib/utils";
 import { MemoryDetailGallery } from "@/src/components/MemoryDetailGallery";
 import { LikeButton } from "@/src/components/social/LikeButton";
 import { CommentModalButton } from "@/src/components/social/CommentModalButton";
+import { fetchMemoryById } from "@/src/lib/vpsMemoryApi";
+import type { Memory } from "@/src/types";
 
 export const revalidate = 0;
 
 export default async function MemoryDetail({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const id = resolvedParams.id;
-  type MemoryWithRelations = Prisma.MemoryGetPayload<{
-    include: {
-      images: { select: { imageUrl: true }; orderBy: { sortOrder: "asc" } };
-      _count: { select: { likes: true; comments: true } };
-    };
-  }> & {
-    post_images: { image_url: string }[];
-    likes: { count: number }[];
-    comments: { count: number }[];
-  };
-
-  let memory: MemoryWithRelations | null = null;
+  let memory: Memory | null = null;
   let error: unknown = null;
   
   try {
-    const rawMemory = await prisma.memory.findUnique({
-      where: { id },
-      include: {
-        images: { select: { imageUrl: true }, orderBy: { sortOrder: 'asc' } },
-        _count: { select: { likes: true, comments: true } }
-      }
-    });
-
-    if (rawMemory) {
-      memory = {
-        ...rawMemory,
-        post_images: rawMemory.images.map(img => ({ image_url: img.imageUrl })),
-        likes: [{ count: rawMemory._count.likes }],
-        comments: [{ count: rawMemory._count.comments }]
-      };
-    }
+    memory = await fetchMemoryById(id);
   } catch (err) {
     error = err;
   }
@@ -114,7 +88,7 @@ export default async function MemoryDetail({ params }: { params: Promise<{ id: s
 
         {/* Right Sticky Image Gallery Side */}
         <div className="relative w-full min-h-[60vh] lg:h-screen lg:w-1/2 lg:sticky lg:top-0 order-first lg:order-last bg-[#D2CBC0]">
-          <MemoryDetailGallery coverImage={memory.cover_image_url} images={memory.post_images} />
+          <MemoryDetailGallery coverImage={memory.cover_image_url} images={memory.post_images ?? []} />
         </div>
       </main>
     </div>
