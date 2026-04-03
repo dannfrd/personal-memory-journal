@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
 import { Memory } from "@/src/types";
+import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 export function HeroSlider({ memories }: { memories: Memory[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -19,7 +19,7 @@ export function HeroSlider({ memories }: { memories: Memory[] }) {
   if (!memories || memories.length === 0) return null;
 
   return (
-    <section className="relative h-[85vh] w-full overflow-hidden bg-[#1C1E1F]">
+    <section className="relative h-[62vh] min-h-[360px] w-full overflow-hidden bg-[#1C1E1F] sm:h-[85vh]">
       <AnimatePresence initial={false}>
         <motion.div
           key={currentIndex}
@@ -33,7 +33,7 @@ export function HeroSlider({ memories }: { memories: Memory[] }) {
             src={memories[currentIndex].cover_image_url}
             alt="Featured Memory"
             fill
-            className="object-cover"
+            className="object-contain object-center sm:object-cover"
             sizes="100vw"
             priority
             unoptimized
