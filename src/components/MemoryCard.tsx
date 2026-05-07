@@ -113,7 +113,7 @@ export function MemoryCard({ memory, index = 0 }: { memory: Memory; index?: numb
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="relative w-full aspect-[4/5] max-h-[85vh] shadow-2xl overflow-hidden rounded-sm"
         >
-          <MemoryDetailGallery coverImage={memory.cover_image_url} images={memory.post_images} memoryId={memory.id} />
+          <MemoryDetailGallery coverImage={memory.cover_image_url} images={memory.post_images} memoryId={memory.id} frameStyle={memory.frame_style} />
         </motion.div>
       </div>
     </section>

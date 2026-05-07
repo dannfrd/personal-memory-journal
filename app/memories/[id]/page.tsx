@@ -88,7 +88,7 @@ export default async function MemoryDetail({ params }: { params: Promise<{ id: s
 
         {/* Right Sticky Image Gallery Side */}
         <div className="relative order-first h-[60vh] w-full sm:h-[70vh] lg:order-last lg:h-screen lg:w-1/2 lg:sticky lg:top-0 bg-[#D2CBC0]">
-          <MemoryDetailGallery coverImage={memory.cover_image_url} images={memory.post_images ?? []} />
+          <MemoryDetailGallery coverImage={memory.cover_image_url} images={memory.post_images ?? []} frameStyle={memory.frame_style} />
         </div>
       </main>
     </div>

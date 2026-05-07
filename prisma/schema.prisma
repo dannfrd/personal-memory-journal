@@ -12,6 +12,7 @@ model Memory {
   title           String?
   cover_image_url String
   hero_image_url  String?
+  frame_style     String?     @default("minimal")
   description     String      @db.Text
   memory_date     DateTime
   location        String?

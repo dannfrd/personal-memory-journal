@@ -18,6 +18,7 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
   const [date, setDate] = useState(initialData?.memory_date?.split("T")[0] || new Date().toISOString().split("T")[0]);
   const [location, setLocation] = useState(initialData?.location || "");
   const [mood, setMood] = useState(initialData?.mood || "");
+  const [frameStyle, setFrameStyle] = useState(initialData?.frame_style || "minimal");
 
   // Original cover image (used for gallery — full, not cropped)
   const [coverFiles, setCoverFiles] = useState<File[]>([]);
@@ -88,6 +89,7 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
         title: title || null,
         coverImageUrl,
         heroImageUrl,
+        frameStyle,
         description,
         memoryDate: new Date(date).toISOString(),
         location: location || null,
@@ -238,6 +240,22 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
               placeholder="e.g. Grateful, Nostalgic"
               className="w-full rounded-lg border border-black/10 bg-transparent px-4 py-3 text-sm focus:border-black/30 focus:outline-none dark:border-white/10 dark:focus:border-white/30"
             />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-bold tracking-widest uppercase opacity-70">Frame Style</label>
+            <select
+              value={frameStyle}
+              onChange={(e) => setFrameStyle(e.target.value)}
+              disabled={isSubmitting}
+              className="w-full rounded-lg border border-black/10 bg-transparent px-4 py-3 text-sm focus:border-black/30 focus:outline-none dark:border-white/10 dark:focus:border-white/30 [&>option]:text-black"
+            >
+              <option value="minimal">Minimal (Default)</option>
+              <option value="polaroid">Polaroid Lucu</option>
+              <option value="film">Film Strip</option>
+              <option value="wavy">Wavy / Bergelombang</option>
+              <option value="stamp">Perangko / Stamp</option>
+            </select>
           </div>
         </div>
       </div>

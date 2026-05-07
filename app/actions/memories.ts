@@ -18,6 +18,7 @@ interface MemoryData extends MemoryMutationPayload {
   title?: string | null
   coverImageUrl: string
   heroImageUrl?: string | null
+  frameStyle?: string | null
   description: string
   memoryDate: string
   location?: string | null

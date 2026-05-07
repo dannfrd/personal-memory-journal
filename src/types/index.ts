@@ -3,6 +3,7 @@ export interface Memory {
   title?: string | null;
   cover_image_url: string;
   hero_image_url?: string | null; // 16:9 cropped version for hero slider
+  frame_style?: string | null; // e.g. polaroid, film, minimal
   description: string;
   memory_date: string; // ISO Date String
   location?: string | null;

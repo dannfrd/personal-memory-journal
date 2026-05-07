@@ -5,9 +5,27 @@ import Link from "next/link";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export function MemoryDetailGallery({ coverImage, images = [], memoryId }: { coverImage: string, images?: { image_url: string }[], memoryId?: string }) {
+export function MemoryDetailGallery({ coverImage, images = [], memoryId, frameStyle = "minimal" }: { coverImage: string, images?: { image_url: string }[], memoryId?: string, frameStyle?: string | null }) {
   const allImages = [coverImage, ...images.map(img => img.image_url)];
   const [index, setIndex] = useState(0);
+
+  const getFrameClasses = (style: string | null) => {
+    switch (style) {
+      case "polaroid":
+        return "border-[12px] border-b-[48px] border-white shadow-xl bg-white";
+      case "film":
+        return "border-x-[20px] border-y-[8px] border-black shadow-lg bg-black";
+      case "wavy":
+        return "rounded-[2rem] border-8 border-white/80 shadow-lg";
+      case "stamp":
+        return "border-[16px] border-white outline-dashed outline-2 outline-gray-300 shadow-md bg-white p-1";
+      case "minimal":
+      default:
+        return "drop-shadow-2xl";
+    }
+  };
+
+  const frameClasses = getFrameClasses(frameStyle);
 
   if (allImages.length <= 1) {
     const content = (
@@ -17,7 +35,11 @@ export function MemoryDetailGallery({ coverImage, images = [], memoryId }: { cov
            <Image src={coverImage} alt="Memory Background" fill className="object-cover opacity-50 blur-2xl scale-125" unoptimized />
         </div>
         {/* Main Image */}
-        <Image src={coverImage} alt="Memory" fill className="object-contain z-10 drop-shadow-2xl" sizes="(max-width: 1024px) 100vw, 50vw" unoptimized priority />
+        <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-12 z-10 pointer-events-none">
+          <div className={`relative h-full max-h-full w-full pointer-events-auto flex items-center justify-center`}>
+            <Image src={coverImage} alt="Memory" fill className={`object-contain ${frameClasses}`} sizes="(max-width: 1024px) 100vw, 50vw" unoptimized priority />
+          </div>
+        </div>
       </>
     );
 
@@ -48,16 +70,22 @@ export function MemoryDetailGallery({ coverImage, images = [], memoryId }: { cov
       </AnimatePresence>
 
       <AnimatePresence mode="wait">
-        <motion.img
-          key={index}
-          src={allImages[index]}
-          alt="Memory Gallery Image"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.4 }}
-          className="absolute inset-0 h-full w-full object-contain z-10 drop-shadow-2xl"
-        />
+        <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-12 z-10 pointer-events-none">
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{ duration: 0.4 }}
+            className={`relative h-full w-full pointer-events-auto flex items-center justify-center`}
+          >
+            <img
+              src={allImages[index]}
+              alt="Memory Gallery Image"
+              className={`max-h-full max-w-full object-contain ${frameClasses}`}
+            />
+          </motion.div>
+        </div>
       </AnimatePresence>
       <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-3 z-30">
         {allImages.map((_, i) => (
