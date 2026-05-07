@@ -48,10 +48,12 @@ export function HeroSlider({ memories }: { memories: Memory[] }) {
   if (!memories || memories.length === 0) return null;
 
   const memory = memories[currentIndex];
+  // Use dedicated 16:9 hero crop if available, else fall back to cover
+  const heroSrc = memory.hero_image_url || memory.cover_image_url;
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-[#1C1E1F]"
+      className="relative w-full overflow-hidden bg-[#1C1E1F] pt-[72px] sm:pt-[88px] lg:pt-[104px]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -72,7 +74,7 @@ export function HeroSlider({ memories }: { memories: Memory[] }) {
             className="absolute inset-0"
           >
             <Image
-              src={memory.cover_image_url}
+              src={heroSrc}
               alt={memory.title || "Featured Memory"}
               fill
               className="object-cover object-center"

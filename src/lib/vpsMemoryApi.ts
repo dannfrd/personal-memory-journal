@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Comment, Memory } from "@/src/types";
 
 export interface MemoryMutationPayload {
   title?: string | null;
   coverImageUrl: string;
+  heroImageUrl?: string | null;
   description: string;
   memoryDate: string;
   location?: string | null;
@@ -57,6 +59,7 @@ function normalizeMemory(raw: any): Memory {
     id: String(raw?.id ?? ""),
     title: raw?.title ?? null,
     cover_image_url: String(raw?.cover_image_url ?? raw?.coverImageUrl ?? ""),
+    hero_image_url: raw?.hero_image_url ?? raw?.heroImageUrl ?? null,
     description: String(raw?.description ?? ""),
     memory_date: toIsoDate(raw?.memory_date ?? raw?.memoryDate),
     location: raw?.location ?? null,

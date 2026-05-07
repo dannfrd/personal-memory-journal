@@ -11,6 +11,7 @@ model Memory {
   id              String      @id @default(uuid())
   title           String?
   cover_image_url String
+  hero_image_url  String?
   description     String      @db.Text
   memory_date     DateTime
   location        String?

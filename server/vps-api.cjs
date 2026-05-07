@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const { createServer } = require("node:http");
 const { URL } = require("node:url");
 const { existsSync } = require("node:fs");
@@ -90,6 +91,7 @@ function mapMemory(raw) {
     id: raw.id,
     title: raw.title ?? null,
     cover_image_url: raw.cover_image_url,
+    hero_image_url: raw.hero_image_url ?? null,
     description: raw.description,
     memory_date: toIsoDate(raw.memory_date),
     location: raw.location ?? null,
@@ -305,6 +307,7 @@ const server = createServer(async (req, res) => {
         data: {
           title: body.title ?? null,
           cover_image_url: coverImageUrl,
+          hero_image_url: body.heroImageUrl ?? null,
           description,
           memory_date: new Date(memoryDate),
           location: body.location ?? null,
@@ -334,6 +337,7 @@ const server = createServer(async (req, res) => {
         data: {
           title: body.title ?? null,
           cover_image_url: coverImageUrl,
+          hero_image_url: body.heroImageUrl ?? null,
           description,
           memory_date: new Date(memoryDate),
           location: body.location ?? null,

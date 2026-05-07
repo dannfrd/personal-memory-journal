@@ -10,8 +10,9 @@ interface ImageCropperProps {
   fileName: string;
   onCropComplete: (croppedFile: File) => void;
   onCancel: () => void;
-  /** Aspect ratio — defaults to 16/9 to match hero slider */
   aspect?: number;
+  /** "hero" = locked 16:9 for home slider | "free" = no forced ratio */
+  mode?: "hero" | "free";
 }
 
 function centerAspectCrop(
@@ -31,19 +32,28 @@ export function ImageCropper({
   fileName,
   onCropComplete,
   onCancel,
-  aspect = 16 / 9,
+  aspect,
+  mode = "hero",
 }: ImageCropperProps) {
   const imgRef = useRef<HTMLImageElement>(null);
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<Crop>();
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // hero mode = locked 16:9, free mode = no restriction
+  const effectiveAspect = mode === "hero" ? (aspect ?? 16 / 9) : aspect;
+
   const onImageLoad = useCallback(
     (e: React.SyntheticEvent<HTMLImageElement>) => {
       const { naturalWidth: width, naturalHeight: height } = e.currentTarget;
-      setCrop(centerAspectCrop(width, height, aspect));
+      if (effectiveAspect) {
+        setCrop(centerAspectCrop(width, height, effectiveAspect));
+      } else {
+        // Free mode: start with a wide default selection
+        setCrop({ unit: "%", x: 5, y: 5, width: 90, height: 90 });
+      }
     },
-    [aspect]
+    [effectiveAspect]
   );
 
   const handleConfirm = useCallback(async () => {
@@ -133,7 +143,7 @@ export function ImageCropper({
             crop={crop}
             onChange={(_, percentCrop) => setCrop(percentCrop)}
             onComplete={(_, percentCrop) => setCompletedCrop(percentCrop)}
-            aspect={aspect}
+            aspect={effectiveAspect}
             minWidth={10}
             className="max-h-full"
           >
@@ -151,7 +161,9 @@ export function ImageCropper({
         {/* Ratio hint */}
         <div className="px-5 py-2 bg-zinc-50 dark:bg-zinc-800/50 border-t border-black/5 dark:border-white/5 shrink-0">
           <p className="text-[11px] opacity-50 text-center">
-            Rasio 16:9 direkomendasikan agar tampil sempurna di Hero Slider
+            {mode === "hero"
+              ? "Rasio 16:9 terkunci — pilih area yang ingin tampil di Hero Slider home"
+              : "Crop bebas — pilih area terbaik untuk ditampilkan"}
           </p>
         </div>
 
