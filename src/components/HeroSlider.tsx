@@ -53,7 +53,7 @@ export function HeroSlider({ memories }: { memories: Memory[] }) {
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-[#1C1E1F] pt-[72px] sm:pt-[88px] lg:pt-[104px]"
+      className="relative w-full bg-[#1C1E1F]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
