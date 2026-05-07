@@ -244,18 +244,36 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
 
           <div>
             <label className="mb-2 block text-xs font-bold tracking-widest uppercase opacity-70">Frame Style</label>
-            <select
-              value={frameStyle}
-              onChange={(e) => setFrameStyle(e.target.value)}
-              disabled={isSubmitting}
-              className="w-full rounded-lg border border-black/10 bg-transparent px-4 py-3 text-sm focus:border-black/30 focus:outline-none dark:border-white/10 dark:focus:border-white/30 [&>option]:text-black"
-            >
-              <option value="minimal">Minimal (Default)</option>
-              <option value="polaroid">Polaroid Lucu</option>
-              <option value="film">Film Strip</option>
-              <option value="wavy">Wavy / Bergelombang</option>
-              <option value="stamp">Perangko / Stamp</option>
-            </select>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+              <select
+                value={frameStyle}
+                onChange={(e) => setFrameStyle(e.target.value)}
+                disabled={isSubmitting}
+                className="w-full sm:w-1/2 flex-shrink-0 rounded-lg border border-black/10 bg-transparent px-4 py-3 text-sm focus:border-black/30 focus:outline-none dark:border-white/10 dark:focus:border-white/30 [&>option]:text-black"
+              >
+                <option value="minimal">Minimal (Default)</option>
+                <option value="polaroid">Polaroid Lucu</option>
+                <option value="film">Film Strip</option>
+                <option value="wavy">Wavy / Bergelombang</option>
+                <option value="stamp">Perangko / Stamp</option>
+              </select>
+
+              {/* Live Preview Box */}
+              <div className="flex-1 rounded-xl bg-black/5 p-4 flex flex-col items-center justify-center dark:bg-white/5 border border-black/10 dark:border-white/10">
+                <p className="text-[10px] font-bold uppercase tracking-widest opacity-50 mb-4">Live Preview</p>
+                <div className="relative w-24 h-32 flex items-center justify-center">
+                  <div className={`w-full h-full bg-cover bg-center transition-all duration-300
+                    ${frameStyle === "polaroid" ? "border-[6px] border-b-[24px] border-white shadow-xl bg-white" : ""}
+                    ${frameStyle === "film" ? "border-x-[10px] border-y-[4px] border-black shadow-lg bg-black" : ""}
+                    ${frameStyle === "wavy" ? "rounded-3xl border-4 border-white/80 shadow-lg" : ""}
+                    ${frameStyle === "stamp" ? "border-[8px] border-white outline-dashed outline-1 outline-gray-300 shadow-md bg-white p-0.5" : ""}
+                    ${frameStyle === "minimal" ? "drop-shadow-xl" : ""}
+                  `} style={{ backgroundImage: "url('https://images.unsplash.com/photo-1518104593124-ac2e82a5eb9d?q=80&w=200&auto=format&fit=crop')" }}>
+                    {/* Placeholder image */}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
