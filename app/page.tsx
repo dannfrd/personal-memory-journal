@@ -30,7 +30,7 @@ export default async function Home() {
           {featuredMemories.length > 0 && <HeroSlider memories={featuredMemories} />}
         </div>
         <div id="journal">
-          <IntroSection />
+          <IntroSection memories={memories} />
         </div>
 
         {error && (

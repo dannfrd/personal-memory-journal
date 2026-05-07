@@ -26,7 +26,7 @@ export function Navbar() {
               priority
               className="h-8 w-auto sm:h-10 mix-blend-normal"
             />
-            <span className="hidden sm:inline-block text-[11px] font-bold uppercase tracking-[0.18em] text-[#2B303A] sm:text-xs">
+            <span className="inline-block text-[11px] font-bold uppercase tracking-[0.18em] text-[#2B303A] sm:text-xs">
               Memory Jurnal
             </span>
           </Link>
