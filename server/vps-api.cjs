@@ -30,12 +30,16 @@ function getUploadToken() {
   return process.env.UPLOAD_API_TOKEN?.trim() || "";
 }
 
+function getInternalSecret() {
+  return process.env.VPS_API_SECRET?.trim() || "";
+}
+
 function sendJson(res, statusCode, payload) {
   res.writeHead(statusCode, {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Internal-Secret",
   });
   res.end(JSON.stringify(payload));
 }
@@ -159,11 +163,28 @@ const server = createServer(async (req, res) => {
     res.writeHead(204, {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Internal-Secret",
     });
     res.end();
     return;
   }
+
+  // ─── Internal Secret Validation ─────────────────────────────────────────────
+  // Public endpoints: GET /uploads/*, GET /health, HEAD /health — skip auth
+  const isPublicEndpoint =
+    (req.method === "GET" && url.pathname.startsWith("/uploads/")) ||
+    (req.method === "GET" && url.pathname === "/health") ||
+    (req.method === "HEAD" && url.pathname === "/health");
+
+  const expectedSecret = getInternalSecret();
+  if (!isPublicEndpoint && expectedSecret) {
+    const incomingSecret = getHeaderValue(req, "x-internal-secret");
+    if (incomingSecret !== expectedSecret) {
+      sendJson(res, 403, { error: "Forbidden: Invalid internal secret" });
+      return;
+    }
+  }
+  // ────────────────────────────────────────────────────────────────────────────
 
   const url = new URL(req.url, "http://localhost");
   const { pathname } = url;

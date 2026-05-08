@@ -105,6 +105,12 @@ async function requestJson<T>(path: string, init: RequestInit = {}, allowNotFoun
     headers.set("Content-Type", "application/json");
   }
 
+  // Add internal secret key to authenticate server-to-server requests
+  const apiSecret = process.env.VPS_API_SECRET;
+  if (apiSecret) {
+    headers.set("X-Internal-Secret", apiSecret);
+  }
+
   const url = buildUrl(path);
 
   let res: Response;
