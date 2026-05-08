@@ -79,8 +79,12 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
       // Upload extra gallery images (index 1+)
       const newGalleryUrls: string[] = [];
       const extraCoverFiles = coverFiles.slice(1);
-      for (const file of extraCoverFiles) {
-        newGalleryUrls.push(await uploadFile(file));
+      
+      // Process in batches of 3 to avoid overwhelming the server
+      for (let i = 0; i < extraCoverFiles.length; i += 3) {
+        const batch = extraCoverFiles.slice(i, i + 3);
+        const batchUrls = await Promise.all(batch.map(file => uploadFile(file)));
+        newGalleryUrls.push(...batchUrls);
       }
 
       const allGalleryImages = [...existingGalleryImages, ...newGalleryUrls];

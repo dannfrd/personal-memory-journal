@@ -63,21 +63,27 @@ export function ImageUploader({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
       if (!files || files.length === 0) return;
-      const file = files[0];
-      e.target.value = "";
-
+      
       if (cropMode === "hero") {
         // Always open crop for hero mode
+        const file = files[0];
+        e.target.value = "";
         openCrop(file, null);
       } else {
         // Free mode: add directly without crop
-        const previewUrl = URL.createObjectURL(file);
+        const newFiles = Array.from(files);
+        e.target.value = "";
+        
         setSelectedFiles((prev) => {
-          const updated = [...prev, file];
+          const updated = [...prev, ...newFiles];
           onFilesChange(updated);
           return updated;
         });
-        setPreviews((prev) => [...prev, previewUrl]);
+        
+        setPreviews((prev) => {
+          const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+          return [...prev, ...newPreviews];
+        });
       }
     },
     [cropMode, openCrop, onFilesChange]
@@ -176,6 +182,7 @@ export function ImageUploader({
             <input
               type="file"
               accept="image/*"
+              multiple={cropMode !== "hero"}
               className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
               onChange={handleFileChange}
               disabled={isSubmitting}
