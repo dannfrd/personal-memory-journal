@@ -24,14 +24,9 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
   const [coverFiles, setCoverFiles] = useState<File[]>([]);
   // Gallery images (swipeable in detail view)
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
-  // 16:9 hero cropped file
-  const [heroFiles, setHeroFiles] = useState<File[]>([]);
 
   const [existingCoverUrl, setExistingCoverUrl] = useState<string>(
     initialData?.cover_image_url || ""
-  );
-  const [existingHeroUrl, setExistingHeroUrl] = useState<string>(
-    initialData?.hero_image_url || ""
   );
   const [existingGalleryImages, setExistingGalleryImages] = useState<string[]>(
     initialData?.post_images?.map((i: any) => i.image_url) || []
@@ -66,16 +61,10 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
     const toastId = toast.loading(isEditing ? "Updating memory..." : "Creating memory...");
 
     try {
-      // Upload cover (original full image)
+      // Upload cover (hero crop 16:9)
       let coverImageUrl = existingCoverUrl;
       if (coverFiles.length > 0) {
         coverImageUrl = await uploadFile(coverFiles[0]);
-      }
-
-      // Upload hero crop (16:9) — optional
-      let heroImageUrl: string | null = existingHeroUrl || null;
-      if (heroFiles.length > 0) {
-        heroImageUrl = await uploadFile(heroFiles[0]);
       }
 
       // Upload extra gallery images (index 1+)
@@ -93,7 +82,7 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
       const postData = {
         title: title || null,
         coverImageUrl,
-        heroImageUrl,
+        heroImageUrl: coverImageUrl, // Gunakan gambar yang sama untuk cover & hero
         frameStyle,
         description,
         memoryDate: new Date(date).toISOString(),
@@ -118,19 +107,19 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
 
-      {/* ── Section 1: Gallery Cover (full original) ── */}
-      <div className="rounded-xl border border-black/10 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900/50">
+      {/* ── Section 1: Gallery Cover & Hero ── */}
+      <div className="rounded-xl border border-rose-200/60 bg-rose-50/40 p-6 shadow-sm dark:border-rose-800/30 dark:bg-rose-950/20">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-widest opacity-50">
-              📸 Cover Galeri (Wajib)
+            <h3 className="text-xs font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400">
+              📸 Cover / Hero Slider (Wajib)
             </h3>
-            <p className="mt-1 text-xs opacity-40">
-              Foto utama yang akan tampil di halaman depan galeri. Wajib diisi (maks. 1 foto).
+            <p className="mt-1 text-xs opacity-50">
+              Versi crop 16:9 — akan tampil di hero slider halaman utama dan sampul galeri. Wajib diisi (maks. 1 foto).
             </p>
           </div>
-          <span className="shrink-0 rounded-full bg-black/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest dark:bg-white/5">
-            Cover
+          <span className="shrink-0 rounded-full bg-rose-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400">
+            16:9 Crop
           </span>
         </div>
         <ImageUploader
@@ -138,13 +127,13 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
           onExistingUrlsChange={(urls) => setExistingCoverUrl(urls[0] || "")}
           defaultImages={existingCoverUrl ? [existingCoverUrl] : []}
           isSubmitting={isSubmitting}
-          cropMode="free"
+          cropMode="hero"
           maxFiles={1}
           label="cover"
         />
       </div>
 
-      {/* ── Section 1.5: Foto Detail Galeri ── */}
+      {/* ── Section 2: Foto Detail Galeri ── */}
       <div className="rounded-xl border border-black/10 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900/50">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
@@ -167,35 +156,6 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
           cropMode="free"
           label="gallery"
         />
-      </div>
-
-      {/* ── Section 2: Hero Crop (16:9 khusus home) ── */}
-      <div className="rounded-xl border border-rose-200/60 bg-rose-50/40 p-6 shadow-sm dark:border-rose-800/30 dark:bg-rose-950/20">
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400">
-              🏠 Hero Slider (Home)
-            </h3>
-            <p className="mt-1 text-xs opacity-50">
-              Versi crop 16:9 — khusus tampil di hero slider halaman utama. Wajib horizontal.
-            </p>
-          </div>
-          <span className="shrink-0 rounded-full bg-rose-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400">
-            16:9 Crop
-          </span>
-        </div>
-        <ImageUploader
-          onFilesChange={(files) => setHeroFiles(files as File[])}
-          onExistingUrlsChange={(urls) => setExistingHeroUrl(urls[0] || "")}
-          defaultImages={existingHeroUrl ? [existingHeroUrl] : []}
-          isSubmitting={isSubmitting}
-          cropMode="hero"
-          maxFiles={1}
-          label="hero"
-        />
-        <p className="mt-2 text-xs opacity-40">
-          Opsional — jika tidak diisi, akan menggunakan cover galeri sebagai fallback di hero slider.
-        </p>
       </div>
 
       {/* ── Section 3: Memory Details ── */}
