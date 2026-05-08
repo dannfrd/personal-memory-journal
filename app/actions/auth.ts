@@ -6,10 +6,38 @@ import {
   createAdminToken,
   isAdminCredentialValid,
 } from "@/src/lib/adminAuth";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export async function loginAdmin(email: string, password: string) {
+export async function loginAdmin(email: string, password: string, turnstileToken?: string) {
+  if (!turnstileToken) {
+    return { success: false, error: "Tolong selesaikan CAPTCHA terlebih dahulu" };
+  }
+
+  const reqHeaders = await headers();
+  const ip = reqHeaders.get('x-forwarded-for')?.split(',')[0] ?? reqHeaders.get('x-real-ip') ?? '127.0.0.1';
+
+  try {
+    const formData = new FormData();
+    formData.append('secret', process.env.TURNSTILE_SECRET_KEY || '');
+    formData.append('response', turnstileToken);
+    formData.append('remoteip', ip);
+
+    const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const turnstileData = await turnstileRes.json();
+
+    if (!turnstileData.success) {
+      return { success: false, error: "Verifikasi CAPTCHA gagal. Silakan coba lagi." };
+    }
+  } catch (err) {
+    console.error("Turnstile verification error:", err);
+    return { success: false, error: "Terjadi kesalahan sistem saat memverifikasi keamanan." };
+  }
+
   if (isAdminCredentialValid(email, password)) {
     const cookieStore = await cookies();
     cookieStore.set(ADMIN_COOKIE_NAME, createAdminToken(), {
