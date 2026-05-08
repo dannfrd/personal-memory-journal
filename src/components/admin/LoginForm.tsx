@@ -76,7 +76,7 @@ export function LoginForm() {
         
         <div 
           className="cf-turnstile" 
-          data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+          data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "0x4AAAAAADLODmapPwvBJLiV"}
           data-theme="auto"
         ></div>
 
