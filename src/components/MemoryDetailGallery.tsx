@@ -85,9 +85,26 @@ export function MemoryDetailGallery({ coverImage, images = [], memoryId, frameSt
           <motion.div
             key={index}
             custom={direction}
-            initial={(d: number) => ({ opacity: 0, x: d > 0 ? 100 : -100, scale: 0.95 })}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={(d: number) => ({ opacity: 0, x: d > 0 ? -100 : 100, scale: 0.95 })}
+            variants={{
+              enter: (d: number) => ({
+                opacity: 0,
+                x: d > 0 ? 100 : -100,
+                scale: 0.95
+              }),
+              center: {
+                opacity: 1,
+                x: 0,
+                scale: 1
+              },
+              exit: (d: number) => ({
+                opacity: 0,
+                x: d < 0 ? 100 : -100,
+                scale: 0.95
+              })
+            }}
+            initial="enter"
+            animate="center"
+            exit="exit"
             transition={{ duration: 0.3, ease: "easeInOut" }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
