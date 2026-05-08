@@ -22,6 +22,8 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
 
   // Original cover image (used for gallery — full, not cropped)
   const [coverFiles, setCoverFiles] = useState<File[]>([]);
+  // Gallery images (swipeable in detail view)
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   // 16:9 hero cropped file
   const [heroFiles, setHeroFiles] = useState<File[]>([]);
 
@@ -78,11 +80,10 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
 
       // Upload extra gallery images (index 1+)
       const newGalleryUrls: string[] = [];
-      const extraCoverFiles = coverFiles.slice(1);
       
       // Process in batches of 3 to avoid overwhelming the server
-      for (let i = 0; i < extraCoverFiles.length; i += 3) {
-        const batch = extraCoverFiles.slice(i, i + 3);
+      for (let i = 0; i < galleryFiles.length; i += 3) {
+        const batch = galleryFiles.slice(i, i + 3);
         const batchUrls = await Promise.all(batch.map(file => uploadFile(file)));
         newGalleryUrls.push(...batchUrls);
       }
@@ -122,33 +123,50 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-widest opacity-50">
-              📸 Cover Galeri
+              📸 Cover Galeri (Wajib)
             </h3>
             <p className="mt-1 text-xs opacity-40">
-              Foto original — akan tampil di halaman galeri & detail memory. Boleh portrait atau landscape.
+              Foto utama yang akan tampil di halaman depan galeri. Wajib diisi (maks. 1 foto).
             </p>
           </div>
           <span className="shrink-0 rounded-full bg-black/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest dark:bg-white/5">
-            Original
+            Cover
           </span>
         </div>
         <ImageUploader
           onFilesChange={(files) => setCoverFiles(files as File[])}
-          onExistingUrlsChange={(urls) => {
-            setExistingCoverUrl(urls[0] || "");
-            setExistingGalleryImages(urls.slice(1));
-          }}
-          defaultImages={[
-            ...(existingCoverUrl ? [existingCoverUrl] : []),
-            ...existingGalleryImages,
-          ]}
+          onExistingUrlsChange={(urls) => setExistingCoverUrl(urls[0] || "")}
+          defaultImages={existingCoverUrl ? [existingCoverUrl] : []}
           isSubmitting={isSubmitting}
           cropMode="free"
+          maxFiles={1}
           label="cover"
         />
-        <p className="mt-2 text-xs opacity-40">
-          Gambar pertama = cover. Gambar berikutnya masuk ke galeri detail.
-        </p>
+      </div>
+
+      {/* ── Section 1.5: Foto Detail Galeri ── */}
+      <div className="rounded-xl border border-black/10 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900/50">
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-widest opacity-50">
+              🖼️ Foto-foto Detail Galeri
+            </h3>
+            <p className="mt-1 text-xs opacity-40">
+              Foto-foto tambahan yang akan bisa di-swipe di halaman detail. Bisa banyak foto sekaligus.
+            </p>
+          </div>
+          <span className="shrink-0 rounded-full bg-black/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest dark:bg-white/5">
+            Gallery
+          </span>
+        </div>
+        <ImageUploader
+          onFilesChange={(files) => setGalleryFiles(files as File[])}
+          onExistingUrlsChange={(urls) => setExistingGalleryImages(urls)}
+          defaultImages={existingGalleryImages}
+          isSubmitting={isSubmitting}
+          cropMode="free"
+          label="gallery"
+        />
       </div>
 
       {/* ── Section 2: Hero Crop (16:9 khusus home) ── */}
