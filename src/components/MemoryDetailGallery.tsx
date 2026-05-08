@@ -8,6 +8,17 @@ import { motion, AnimatePresence } from "framer-motion";
 export function MemoryDetailGallery({ coverImage, images = [], memoryId, frameStyle = "minimal" }: { coverImage: string, images?: { image_url: string }[], memoryId?: string, frameStyle?: string | null }) {
   const allImages = [coverImage, ...images.map(img => img.image_url)];
   const [index, setIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
+
+  const slideNext = () => {
+    setDirection(1);
+    setIndex(prev => prev === allImages.length - 1 ? 0 : prev + 1);
+  };
+
+  const slidePrev = () => {
+    setDirection(-1);
+    setIndex(prev => prev === 0 ? allImages.length - 1 : prev - 1);
+  };
 
   const getFrameClasses = (style: string | null) => {
     switch (style) {
@@ -69,20 +80,32 @@ export function MemoryDetailGallery({ coverImage, images = [], memoryId, frameSt
          </motion.div>
       </AnimatePresence>
 
-      <AnimatePresence mode="wait">
-        <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-12 z-10 pointer-events-none">
+      <AnimatePresence mode="wait" custom={direction}>
+        <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-12 z-10 pointer-events-none overflow-hidden">
           <motion.div
             key={index}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-            transition={{ duration: 0.4 }}
+            custom={direction}
+            initial={(d: number) => ({ opacity: 0, x: d > 0 ? 100 : -100, scale: 0.95 })}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={(d: number) => ({ opacity: 0, x: d > 0 ? -100 : 100, scale: 0.95 })}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.8}
+            onDragEnd={(e, { offset, velocity }) => {
+              const swipe = offset.x;
+              if (swipe < -50 || velocity.x < -500) {
+                slideNext();
+              } else if (swipe > 50 || velocity.x > 500) {
+                slidePrev();
+              }
+            }}
             className={`relative h-full w-full pointer-events-auto flex items-center justify-center`}
           >
             <img
               src={allImages[index]}
               alt="Memory Gallery Image"
-              className={`max-h-full max-w-full object-contain ${frameClasses}`}
+              className={`max-h-full max-w-full object-contain ${frameClasses} pointer-events-none select-none`}
             />
           </motion.div>
         </div>
@@ -91,7 +114,12 @@ export function MemoryDetailGallery({ coverImage, images = [], memoryId, frameSt
         {allImages.map((_, i) => (
           <button 
             key={i} 
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIndex(i); }} 
+            onClick={(e) => { 
+              e.preventDefault(); 
+              e.stopPropagation(); 
+              setDirection(i > index ? 1 : -1);
+              setIndex(i); 
+            }} 
             aria-label={`Go to slide ${i + 1}`}
             className={`h-2.5 w-2.5 rounded-full transition-all ${i === index ? "bg-white scale-125" : "bg-white/40 hover:bg-white/70"}`}
           />
@@ -99,11 +127,11 @@ export function MemoryDetailGallery({ coverImage, images = [], memoryId, frameSt
       </div>
       
       {/* Click zones for navigation */}
-      <div className="absolute inset-y-0 left-0 w-1/3 cursor-pointer z-30" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIndex(prev => prev === 0 ? allImages.length - 1 : prev - 1); }}></div>
+      <div className="absolute inset-y-0 left-0 w-1/4 cursor-pointer z-30" onClick={(e) => { e.preventDefault(); e.stopPropagation(); slidePrev(); }}></div>
       {memoryId && (
-        <Link href={`/memories/${memoryId}`} className="absolute inset-y-0 left-1/3 right-1/3 cursor-pointer z-30 block" aria-label="View Memory" />
+        <Link href={`/memories/${memoryId}`} className="absolute inset-y-0 left-1/4 right-1/4 cursor-pointer z-30 block" aria-label="View Memory" />
       )}
-      <div className="absolute inset-y-0 right-0 w-1/3 cursor-pointer z-30" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIndex(prev => prev === allImages.length - 1 ? 0 : prev + 1); }}></div>
+      <div className="absolute inset-y-0 right-0 w-1/4 cursor-pointer z-30" onClick={(e) => { e.preventDefault(); e.stopPropagation(); slideNext(); }}></div>
     </div>
   );
 }
