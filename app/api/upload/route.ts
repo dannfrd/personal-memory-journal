@@ -74,6 +74,8 @@ export async function POST(request: Request) {
 
     const vpsUploadUrl = `${getVpsApiBaseUrl()}/uploads`;
     const uploadToken = process.env.UPLOAD_API_TOKEN?.trim();
+    const internalSecret = process.env.VPS_API_SECRET?.trim();
+    
     let uploadRes: Response;
     try {
       uploadRes = await fetch(vpsUploadUrl, {
@@ -82,6 +84,7 @@ export async function POST(request: Request) {
           'Content-Type': file.type || 'application/octet-stream',
           'X-File-Name': filename,
           ...(uploadToken ? { 'X-Upload-Token': uploadToken } : {}),
+          ...(internalSecret ? { 'X-Internal-Secret': internalSecret } : {}),
         },
         body: buffer,
         cache: 'no-store',
