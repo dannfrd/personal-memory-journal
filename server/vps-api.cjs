@@ -169,12 +169,15 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  const url = new URL(req.url, "http://localhost");
+  const { pathname } = url;
+
   // ─── Internal Secret Validation ─────────────────────────────────────────────
   // Public endpoints: GET /uploads/*, GET /health, HEAD /health — skip auth
   const isPublicEndpoint =
-    (req.method === "GET" && url.pathname.startsWith("/uploads/")) ||
-    (req.method === "GET" && url.pathname === "/health") ||
-    (req.method === "HEAD" && url.pathname === "/health");
+    (req.method === "GET" && pathname.startsWith("/uploads/")) ||
+    (req.method === "GET" && pathname === "/health") ||
+    (req.method === "HEAD" && pathname === "/health");
 
   const expectedSecret = getInternalSecret();
   if (!isPublicEndpoint && expectedSecret) {
@@ -185,9 +188,6 @@ const server = createServer(async (req, res) => {
     }
   }
   // ────────────────────────────────────────────────────────────────────────────
-
-  const url = new URL(req.url, "http://localhost");
-  const { pathname } = url;
 
   try {
     const uploadFileName = parseId(pathname, "/uploads/");
