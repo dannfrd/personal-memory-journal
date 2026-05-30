@@ -5,7 +5,7 @@ import { basename } from 'path';
 
 // Allowed MIME types
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+const MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
 
 function getVpsApiBaseUrl() {
   const baseUrl = process.env.VPS_API_BASE_URL?.trim();
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     // 3. Validate file size
     if (file.size > MAX_SIZE_BYTES) {
       return NextResponse.json(
-        { success: false, error: 'File too large. Maximum size is 10 MB.' },
+        { success: false, error: 'File too large. Maximum size is 25 MB.' },
         { status: 400 }
       );
     }

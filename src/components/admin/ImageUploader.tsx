@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { UploadCloud, X, Crop as CropIcon } from "lucide-react";
+import { Crop as CropIcon, UploadCloud, X } from "lucide-react";
 import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { ImageCropper } from "./ImageCropper";
 
 /** 
@@ -11,6 +12,66 @@ import { ImageCropper } from "./ImageCropper";
  *  - "hero"  → crop wajib 16:9 → untuk hero slider home
  */
 export type CropMode = "free" | "hero";
+
+const MAX_CLIENT_FILE_BYTES = 25 * 1024 * 1024;
+const MAX_IMAGE_DIMENSION = 2200;
+const JPEG_QUALITY = 0.86;
+
+async function loadImageFromFile(file: File): Promise<HTMLImageElement> {
+  const objectUrl = URL.createObjectURL(file);
+  return new Promise((resolve, reject) => {
+    const img = document.createElement("img");
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(img);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Failed to load image"));
+    };
+    img.src = objectUrl;
+  });
+}
+
+async function prepareImageFile(file: File): Promise<File> {
+  if (file.type === "image/gif") return file;
+
+  const img = await loadImageFromFile(file);
+  const maxDim = MAX_IMAGE_DIMENSION;
+  const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+  const targetWidth = Math.max(1, Math.round(img.width * scale));
+  const targetHeight = Math.max(1, Math.round(img.height * scale));
+
+  const shouldReencode = scale < 1 || file.size > 3 * 1024 * 1024;
+  if (!shouldReencode) return file;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return file;
+
+  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+  const outputType = file.type === "image/png" ? "image/png" : "image/jpeg";
+  const outputQuality = outputType === "image/jpeg" ? JPEG_QUALITY : undefined;
+
+  const blob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (result) => (result ? resolve(result) : reject(new Error("Image conversion failed"))),
+      outputType,
+      outputQuality
+    );
+  });
+
+  const baseName = file.name.replace(/\.[^/.]+$/, "");
+  const extension = outputType === "image/png" ? "png" : "jpg";
+  return new File([blob], `${baseName}_optimized.${extension}`, {
+    type: outputType,
+    lastModified: Date.now(),
+  });
+}
 
 interface MultiImageUploaderProps {
   onFilesChange: (files: File[]) => void;
@@ -60,20 +121,40 @@ export function ImageUploader({
   }, []);
 
   const handleFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
       if (!files || files.length === 0) return;
+      const incomingFiles = Array.from(files);
+      e.target.value = "";
       
       if (cropMode === "hero") {
         // Always open crop for hero mode
-        const file = files[0];
-        e.target.value = "";
+        const file = incomingFiles[0];
+        if (file.size > MAX_CLIENT_FILE_BYTES) {
+          toast.error("Ukuran gambar terlalu besar (maks 25MB). Coba kompres dulu.");
+          return;
+        }
         openCrop(file, null);
       } else {
         // Free mode: add directly without crop
-        const newFiles = Array.from(files);
-        e.target.value = "";
-        
+        const preparedFiles = await Promise.all(
+          incomingFiles.map(async (file) => {
+            if (file.size > MAX_CLIENT_FILE_BYTES) {
+              toast.error("Ukuran gambar terlalu besar (maks 25MB). Coba kompres dulu.");
+              return null;
+            }
+            try {
+              return await prepareImageFile(file);
+            } catch {
+              toast.error("Gagal memproses gambar. Coba upload ulang.");
+              return null;
+            }
+          })
+        );
+
+        const newFiles = preparedFiles.filter(Boolean) as File[];
+        if (newFiles.length === 0) return;
+
         setSelectedFiles((prev) => {
           const updated = [...prev, ...newFiles];
           onFilesChange(updated);
@@ -191,7 +272,7 @@ export function ImageUploader({
             <p className="mb-1 text-sm font-medium">
               {isHeroMode ? "Upload foto untuk Hero Slider" : "Click atau drag gambar untuk upload"}
             </p>
-            <p className="text-xs opacity-50">PNG, JPG atau GIF (max. 10MB)</p>
+            <p className="text-xs opacity-50">PNG, JPG atau GIF (max. 25MB)</p>
             {isHeroMode && (
               <p className="mt-2 text-xs font-semibold text-rose-500/80">
                 ✂️ Crop 16:9 otomatis terbuka — pastikan area yang dipilih terlihat bagus di layar penuh

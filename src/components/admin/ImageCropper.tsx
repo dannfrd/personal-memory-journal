@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { Check, CropIcon, X } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-import { X, Check, CropIcon } from "lucide-react";
 
 interface ImageCropperProps {
   src: string;
@@ -14,6 +14,9 @@ interface ImageCropperProps {
   /** "hero" = locked 16:9 for home slider | "free" = no forced ratio */
   mode?: "hero" | "free";
 }
+
+const MAX_CROP_DIMENSION = 2400;
+const JPEG_QUALITY = 0.86;
 
 function centerAspectCrop(
   mediaWidth: number,
@@ -74,8 +77,12 @@ export function ImageCropper({
         height: (completedCrop.height / 100) * image.height * scaleY,
       };
 
-      canvas.width = pixelCrop.width;
-      canvas.height = pixelCrop.height;
+      const scale = Math.min(1, MAX_CROP_DIMENSION / Math.max(pixelCrop.width, pixelCrop.height));
+      const outputWidth = Math.max(1, Math.round(pixelCrop.width * scale));
+      const outputHeight = Math.max(1, Math.round(pixelCrop.height * scale));
+
+      canvas.width = outputWidth;
+      canvas.height = outputHeight;
 
       const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("No canvas context");
@@ -88,15 +95,15 @@ export function ImageCropper({
         pixelCrop.height,
         0,
         0,
-        pixelCrop.width,
-        pixelCrop.height
+        outputWidth,
+        outputHeight
       );
 
       canvas.toBlob(
         (blob) => {
           if (!blob) return;
-          const ext = fileName.split(".").pop() || "jpg";
-          const croppedName = `${fileName.replace(/\.[^/.]+$/, "")}_cropped.${ext}`;
+          const baseName = fileName.replace(/\.[^/.]+$/, "");
+          const croppedName = `${baseName}_cropped.jpg`;
           const croppedFile = new File([blob], croppedName, {
             type: blob.type,
             lastModified: Date.now(),
@@ -105,7 +112,7 @@ export function ImageCropper({
           setIsProcessing(false);
         },
         "image/jpeg",
-        0.92
+        JPEG_QUALITY
       );
     } catch {
       setIsProcessing(false);
