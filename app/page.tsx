@@ -1,8 +1,9 @@
-import { Navbar } from "@/src/components/Navbar";
-import { MemoryGrid } from "@/src/components/MemoryGrid";
 import { EmptyState } from "@/src/components/EmptyState";
 import { HeroSlider } from "@/src/components/HeroSlider";
 import { IntroSection } from "@/src/components/IntroSection";
+import { MemoryGrid } from "@/src/components/MemoryGrid";
+import { MusicPlayer } from "@/src/components/MusicPlayer";
+import { Navbar } from "@/src/components/Navbar";
 import { fetchMemories } from "@/src/lib/vpsMemoryApi";
 
 import type { Memory } from "@/src/types";
@@ -24,6 +25,7 @@ export default async function Home() {
   return (
     <div className="relative min-h-screen font-sans bg-[#EAE5DF] text-[#2B303A] selection:bg-black selection:text-white">
       <Navbar />
+      <MusicPlayer />
       
       <main className="w-full h-full m-0 p-0">
         <div id="home">

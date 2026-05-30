@@ -1,46 +1,83 @@
 "use client";
 
+import type { Memory } from "@/src/types";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import type { Memory } from "@/src/types";
+import { useEffect, useMemo, useState } from "react";
 
 export function IntroSection({ memories = [] }: { memories?: Memory[] }) {
-  // Extract all images (covers + gallery images)
-  const allImages = memories.flatMap((m) => [
-    m.cover_image_url,
-    ...(m.post_images?.map((img) => img.image_url) || []),
-  ]).filter(Boolean);
+  const allImages = useMemo(
+    () =>
+      memories
+        .flatMap((m) => [
+          m.cover_image_url,
+          ...(m.post_images?.map((img) => img.image_url) || []),
+        ])
+        .filter(Boolean),
+    [memories]
+  );
 
-  // Take up to 15 images for the background collage
-  const collageImages = allImages.slice(0, 15);
+  const [collageItems, setCollageItems] = useState<
+    { src: string; offset: number; rotate: number; scale: number }[]
+  >(() =>
+    allImages.slice(0, 15).map((src) => ({
+      src,
+      offset: 0,
+      rotate: 0,
+      scale: 1,
+    }))
+  );
+
+  useEffect(() => {
+    if (allImages.length === 0) {
+      setCollageItems([]);
+      return;
+    }
+
+    const shuffled = [...allImages];
+    for (let i = shuffled.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    const items = shuffled.slice(0, 15).map((src) => ({
+      src,
+      offset: Math.round(Math.random() * 20 - 10),
+      rotate: Math.round(Math.random() * 10 - 5),
+      scale: 0.98 + Math.random() * 0.1,
+    }));
+
+    setCollageItems(items);
+  }, [allImages]);
 
   return (
     <section className="relative flex flex-col items-center justify-center overflow-hidden bg-[#EAE5DF] px-8 py-32 text-center text-[#2B303A] sm:px-16 lg:py-48">
       {/* --- Background Collage --- */}
-      {collageImages.length > 0 && (
-        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none opacity-[0.15]">
-          <div className="grid h-full w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 p-4 transform scale-110 rotate-[-2deg]">
-            {collageImages.map((src, i) => (
-              <div 
-                key={i} 
+      {collageItems.length > 0 && (
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none opacity-[0.28]">
+          <div className="grid h-full w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 p-4 transform scale-110 rotate-[-1.5deg]">
+            {collageItems.map((item, i) => (
+              <div
+                key={`${item.src}-${i}`}
                 className={`relative aspect-[3/4] w-full overflow-hidden rounded-xl shadow-lg
-                  ${i % 2 === 0 ? "mt-8" : "-mt-8"} 
                   ${i % 3 === 0 ? "hidden md:block" : ""}
                 `}
+                style={{
+                  transform: `translateY(${item.offset}px) rotate(${item.rotate}deg) scale(${item.scale})`,
+                }}
               >
                 <Image
-                  src={src}
+                  src={item.src}
                   alt="Collage Background"
                   fill
-                  className="object-cover grayscale"
+                  className="object-cover saturate-110"
                   unoptimized
                 />
               </div>
             ))}
           </div>
-          {/* Heavy gradient overlay to ensure text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#EAE5DF] via-[#EAE5DF]/50 to-[#EAE5DF]" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#EAE5DF] via-transparent to-[#EAE5DF]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#EAE5DF] via-[#EAE5DF]/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#EAE5DF]/70 via-transparent to-[#EAE5DF]" />
         </div>
       )}
 
