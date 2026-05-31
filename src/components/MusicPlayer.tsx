@@ -20,11 +20,11 @@ export function MusicPlayer({
   const resolvedTitle = title ?? process.env.NEXT_PUBLIC_MUSIC_TITLE;
   const defaultTracks = [
     {
-      src: "/audio/Ghea Indrawari - 1000X (Official Visualizer).mp3",
+      src: "/audio/ghea-1000x.mp3",
       title: "Ghea Indrawari - 1000X",
     },
     {
-      src: "/audio/Nadhif Basalamah (with Aziz Harun & Aisha Retno) - kota ini tak sama tanpamu (Official Lyric Video).mp3",
+      src: "/audio/nadhif-kota-ini.mp3",
       title: "Nadhif Basalamah - kota ini tak sama tanpamu",
     },
   ];
