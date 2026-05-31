@@ -8,7 +8,6 @@ interface MusicPlayerProps {
   title?: string;
   tracks?: { src: string; title: string }[];
   defaultVolume?: number;
-  spotifyEmbedUrl?: string;
 }
 
 export function MusicPlayer({
@@ -16,9 +15,7 @@ export function MusicPlayer({
   title,
   tracks,
   defaultVolume = 0.3,
-  spotifyEmbedUrl,
 }: MusicPlayerProps) {
-  const resolvedSpotifyEmbedUrl = spotifyEmbedUrl;
   const resolvedSrc = src ?? process.env.NEXT_PUBLIC_MUSIC_URL;
   const resolvedTitle = title ?? process.env.NEXT_PUBLIC_MUSIC_TITLE;
   const defaultTracks = [
@@ -93,45 +90,6 @@ export function MusicPlayer({
       return base === 0 ? resolvedTracks.length - 1 : base - 1;
     });
   };
-
-  if (resolvedSpotifyEmbedUrl) {
-    const wrapperHeight = isOpen ? 352 : 152;
-    const iframeOffset = isOpen ? 0 : 200;
-
-    return (
-      <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2">
-        <button
-          type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
-          aria-label={isOpen ? "Minimize music player" : "Expand music player"}
-          aria-expanded={isOpen}
-          className="flex items-center gap-3 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-[#2B303A] shadow-lg backdrop-blur-md"
-        >
-          <span className="flex flex-col items-start">
-            <span className="text-[10px] uppercase tracking-[0.3em] opacity-60">Now Playing</span>
-            <span className="text-xs font-semibold">{resolvedTitle}</span>
-          </span>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.28em] opacity-70">
-            {isOpen ? "Minimize" : "Expand"}
-          </span>
-        </button>
-        <div
-          className="overflow-hidden rounded-2xl border border-black/10 bg-white/80 shadow-xl backdrop-blur-md transition-all duration-300"
-          style={{ height: wrapperHeight }}
-        >
-          <iframe
-            title="Spotify playlist"
-            src={resolvedSpotifyEmbedUrl}
-            width={320}
-            height={352}
-            style={{ border: 0, transform: `translateY(-${iframeOffset}px)`, transition: "transform 300ms ease" }}
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-          />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2 text-[#2B303A]">
