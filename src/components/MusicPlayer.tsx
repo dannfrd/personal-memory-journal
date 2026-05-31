@@ -49,7 +49,7 @@ export function MusicPlayer({
   };
 
   if (resolvedSpotifyEmbedUrl) {
-    const spotifyHeight = isOpen ? 352 : 80;
+    const wrapperHeight = isOpen ? 352 : 80;
 
     return (
       <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2">
@@ -70,13 +70,13 @@ export function MusicPlayer({
         </button>
         <div
           className="overflow-hidden rounded-2xl border border-black/10 bg-white/80 shadow-xl backdrop-blur-md transition-all duration-300"
-          style={{ height: spotifyHeight }}
+          style={{ height: wrapperHeight }}
         >
           <iframe
             title="Spotify playlist"
             src={resolvedSpotifyEmbedUrl}
             width={320}
-            height={spotifyHeight}
+            height={352}
             style={{ border: 0 }}
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
             loading="lazy"
