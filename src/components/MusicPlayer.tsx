@@ -54,18 +54,33 @@ export function MusicPlayer({
     }
   }, [volume]);
 
+  const attemptPlay = async (fromUser: boolean) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (fromUser) {
+      audio.muted = false;
+    }
+
+    if (audio.readyState < 2) {
+      audio.load();
+    }
+
+    try {
+      await audio.play();
+    } catch {
+      setIsPlaying(false);
+    }
+  };
+
   const togglePlayback = async () => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    try {
-      if (audio.paused) {
-        await audio.play();
-      } else {
-        audio.pause();
-      }
-    } catch {
-      setIsPlaying(false);
+    if (audio.paused) {
+      await attemptPlay(true);
+    } else {
+      audio.pause();
     }
   };
 
@@ -99,12 +114,13 @@ export function MusicPlayer({
         autoPlay
         playsInline
         loop={!hasMultipleTracks}
-        preload="metadata"
+        preload="auto"
         crossOrigin={isRemoteSource ? "anonymous" : undefined}
+        onLoadedMetadata={() => setReadySrc(encodedSrc)}
         onCanPlay={() => {
           setReadySrc(encodedSrc);
           if (autoPlayOnLoad) {
-            audioRef.current?.play().catch(() => setIsPlaying(false));
+            attemptPlay(false);
             setAutoPlayOnLoad(false);
           }
         }}
@@ -117,7 +133,7 @@ export function MusicPlayer({
           type="button"
           onClick={togglePlayback}
           aria-label={isPlaying ? "Pause background music" : "Play background music"}
-          disabled={!isReady}
+          disabled={!currentTrack}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2B303A] text-white transition-transform hover:scale-105 disabled:opacity-50"
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
