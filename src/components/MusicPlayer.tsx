@@ -37,7 +37,12 @@ export function MusicPlayer({
     ? Math.min(currentIndex, resolvedTracks.length - 1)
     : 0;
   const currentTrack = resolvedTracks[safeIndex] ?? resolvedTracks[0];
-  const encodedSrc = currentTrack ? encodeURI(currentTrack.src) : "";
+  const encodedSrc = currentTrack
+    ? currentTrack.src
+        .split("/")
+        .map((segment) => encodeURIComponent(segment))
+        .join("/")
+    : "";
   const isRemoteSource = currentTrack ? /^https?:\/\//.test(currentTrack.src) : false;
   const [isOpen, setIsOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -45,6 +50,7 @@ export function MusicPlayer({
   const [readySrc, setReadySrc] = useState<string | null>(null);
   const [volume, setVolume] = useState(defaultVolume);
   const [autoPlayOnLoad, setAutoPlayOnLoad] = useState(true);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const hasMultipleTracks = resolvedTracks.length > 1;
   const isReady = encodedSrc !== "" && readySrc === encodedSrc;
 
@@ -68,8 +74,12 @@ export function MusicPlayer({
 
     try {
       await audio.play();
+      setAutoplayBlocked(false);
     } catch {
       setIsPlaying(false);
+      if (!fromUser) {
+        setAutoplayBlocked(true);
+      }
     }
   };
 
@@ -127,7 +137,20 @@ export function MusicPlayer({
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onEnded={handleNext}
+        onError={() => setAutoplayBlocked(true)}
       />
+      {autoplayBlocked && (
+        <div className="flex w-[320px] max-w-[90vw] items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white/80 px-4 py-3 text-[#2B303A] shadow-lg backdrop-blur-md">
+          <span className="text-xs font-semibold">Tap untuk aktifkan suara</span>
+          <button
+            type="button"
+            onClick={() => attemptPlay(true)}
+            className="rounded-full border border-black/10 bg-[#2B303A] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-white"
+          >
+            Play
+          </button>
+        </div>
+      )}
       <div className="flex w-[320px] max-w-[90vw] items-center gap-3 rounded-full border border-black/10 bg-white/80 px-4 py-2 shadow-lg backdrop-blur-md">
         <button
           type="button"
@@ -187,7 +210,7 @@ export function MusicPlayer({
             aria-label="Music volume"
           />
           <span className="text-[10px] uppercase tracking-[0.3em] opacity-60">
-            {currentIndex + 1}/{resolvedTracks.length}
+            {safeIndex + 1}/{resolvedTracks.length}
           </span>
         </div>
       )}
