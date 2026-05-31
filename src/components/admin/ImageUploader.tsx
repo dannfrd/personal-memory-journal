@@ -296,7 +296,7 @@ export function ImageUploader({
           <div className={`relative mb-4 flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 text-center transition-colors ${isHeroMode ? "border-rose-300/60 bg-rose-50/30 hover:bg-rose-50/60 dark:border-rose-700/30 dark:bg-rose-950/10 dark:hover:bg-rose-950/20" : "border-black/10 bg-black/5 hover:bg-black/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"}`}>
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,.heic,.heif"
               multiple={cropMode !== "hero"}
               className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
               onChange={handleFileChange}
@@ -306,7 +306,7 @@ export function ImageUploader({
             <p className="mb-1 text-sm font-medium">
               {isHeroMode ? "Upload foto untuk Hero Slider" : "Click atau drag gambar untuk upload"}
             </p>
-            <p className="text-xs opacity-50">PNG, JPG atau GIF (max. 25MB)</p>
+            <p className="text-xs opacity-50">PNG, JPG, GIF, atau HEIC (max. 25MB)</p>
             {isHeroMode && (
               <p className="mt-2 text-xs font-semibold text-rose-500/80">
                 ✂️ Crop 16:9 otomatis terbuka — pastikan area yang dipilih terlihat bagus di layar penuh
