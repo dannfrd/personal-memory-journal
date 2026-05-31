@@ -1,11 +1,12 @@
 "use client";
 
-import { Pause, Play, Volume2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface MusicPlayerProps {
   src?: string;
   title?: string;
+  tracks?: { src: string; title: string }[];
   defaultVolume?: number;
   spotifyEmbedUrl?: string;
 }
@@ -13,19 +14,42 @@ interface MusicPlayerProps {
 export function MusicPlayer({
   src,
   title,
+  tracks,
   defaultVolume = 0.3,
   spotifyEmbedUrl,
 }: MusicPlayerProps) {
-  const resolvedSpotifyEmbedUrl =
-    spotifyEmbedUrl ?? process.env.NEXT_PUBLIC_SPOTIFY_EMBED_URL;
-  const resolvedSrc = src ?? process.env.NEXT_PUBLIC_MUSIC_URL ?? "/audio/ambient.mp3";
-  const resolvedTitle = title ?? process.env.NEXT_PUBLIC_MUSIC_TITLE ?? "Ambient";
-  const isRemoteSource = /^https?:\/\//.test(resolvedSrc);
+  const resolvedSpotifyEmbedUrl = spotifyEmbedUrl;
+  const resolvedSrc = src ?? process.env.NEXT_PUBLIC_MUSIC_URL;
+  const resolvedTitle = title ?? process.env.NEXT_PUBLIC_MUSIC_TITLE;
+  const defaultTracks = [
+    {
+      src: "/audio/Ghea Indrawari - 1000X (Official Visualizer).mp3",
+      title: "Ghea Indrawari - 1000X",
+    },
+    {
+      src: "/audio/Nadhif Basalamah (with Aziz Harun & Aisha Retno) - kota ini tak sama tanpamu (Official Lyric Video).mp3",
+      title: "Nadhif Basalamah - kota ini tak sama tanpamu",
+    },
+  ];
+  const envTracks = resolvedSrc
+    ? [{ src: resolvedSrc, title: resolvedTitle ?? "Ambient" }]
+    : [];
+  const resolvedTracks = tracks?.length ? tracks : envTracks.length ? envTracks : defaultTracks;
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const safeIndex = resolvedTracks.length
+    ? Math.min(currentIndex, resolvedTracks.length - 1)
+    : 0;
+  const currentTrack = resolvedTracks[safeIndex] ?? resolvedTracks[0];
+  const encodedSrc = currentTrack ? encodeURI(currentTrack.src) : "";
+  const isRemoteSource = currentTrack ? /^https?:\/\//.test(currentTrack.src) : false;
   const [isOpen, setIsOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [readySrc, setReadySrc] = useState<string | null>(null);
   const [volume, setVolume] = useState(defaultVolume);
+  const [autoPlayOnLoad, setAutoPlayOnLoad] = useState(true);
+  const hasMultipleTracks = resolvedTracks.length > 1;
+  const isReady = encodedSrc !== "" && readySrc === encodedSrc;
 
   useEffect(() => {
     if (audioRef.current) {
@@ -48,8 +72,31 @@ export function MusicPlayer({
     }
   };
 
+  const handleNext = () => {
+    if (!hasMultipleTracks) return;
+    setAutoPlayOnLoad(isPlaying);
+    setCurrentIndex((prev) => {
+      const base = resolvedTracks.length
+        ? Math.min(prev, resolvedTracks.length - 1)
+        : 0;
+      return base === resolvedTracks.length - 1 ? 0 : base + 1;
+    });
+  };
+
+  const handlePrev = () => {
+    if (!hasMultipleTracks) return;
+    setAutoPlayOnLoad(isPlaying);
+    setCurrentIndex((prev) => {
+      const base = resolvedTracks.length
+        ? Math.min(prev, resolvedTracks.length - 1)
+        : 0;
+      return base === 0 ? resolvedTracks.length - 1 : base - 1;
+    });
+  };
+
   if (resolvedSpotifyEmbedUrl) {
-    const wrapperHeight = isOpen ? 352 : 80;
+    const wrapperHeight = isOpen ? 352 : 152;
+    const iframeOffset = isOpen ? 0 : 200;
 
     return (
       <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2">
@@ -77,7 +124,7 @@ export function MusicPlayer({
             src={resolvedSpotifyEmbedUrl}
             width={320}
             height={352}
-            style={{ border: 0 }}
+            style={{ border: 0, transform: `translateY(-${iframeOffset}px)`, transition: "transform 300ms ease" }}
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
             loading="lazy"
           />
@@ -87,42 +134,89 @@ export function MusicPlayer({
   }
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex items-center gap-3 rounded-full border border-black/10 bg-white/70 px-4 py-2 text-[#2B303A] shadow-lg backdrop-blur-md">
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2 text-[#2B303A]">
       <audio
         ref={audioRef}
-        src={resolvedSrc}
-        loop
+        src={encodedSrc}
+        autoPlay
+        playsInline
+        loop={!hasMultipleTracks}
         preload="metadata"
         crossOrigin={isRemoteSource ? "anonymous" : undefined}
-        onCanPlay={() => setIsReady(true)}
+        onCanPlay={() => {
+          setReadySrc(encodedSrc);
+          if (autoPlayOnLoad) {
+            audioRef.current?.play().catch(() => setIsPlaying(false));
+            setAutoPlayOnLoad(false);
+          }
+        }}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
+        onEnded={handleNext}
       />
-      <button
-        type="button"
-        onClick={togglePlayback}
-        aria-label={isPlaying ? "Pause background music" : "Play background music"}
-        disabled={!isReady}
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2B303A] text-white transition-transform hover:scale-105 disabled:opacity-50"
-      >
-        {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-      </button>
-      <div className="flex flex-col">
-        <span className="text-[10px] uppercase tracking-[0.3em] opacity-60">Now Playing</span>
-        <span className="text-xs font-semibold">{resolvedTitle}</span>
+      <div className="flex w-[320px] max-w-[90vw] items-center gap-3 rounded-full border border-black/10 bg-white/80 px-4 py-2 shadow-lg backdrop-blur-md">
+        <button
+          type="button"
+          onClick={togglePlayback}
+          aria-label={isPlaying ? "Pause background music" : "Play background music"}
+          disabled={!isReady}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2B303A] text-white transition-transform hover:scale-105 disabled:opacity-50"
+        >
+          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={handlePrev}
+            aria-label="Previous track"
+            disabled={!hasMultipleTracks}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#2B303A] transition-transform hover:scale-105 disabled:opacity-40"
+          >
+            <SkipBack className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={handleNext}
+            aria-label="Next track"
+            disabled={!hasMultipleTracks}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#2B303A] transition-transform hover:scale-105 disabled:opacity-40"
+          >
+            <SkipForward className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="text-[10px] uppercase tracking-[0.3em] opacity-60">Now Playing</span>
+          <span className="truncate text-xs font-semibold">
+            {currentTrack?.title ?? resolvedTitle ?? "Untitled"}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          aria-label={isOpen ? "Collapse player" : "Expand player"}
+          aria-expanded={isOpen}
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#2B303A] transition-transform hover:scale-105"
+        >
+          {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+        </button>
       </div>
-      <div className="hidden items-center gap-2 sm:flex">
-        <Volume2 className="h-4 w-4 opacity-60" />
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={Math.round(volume * 100)}
-          onChange={(event) => setVolume(Number(event.target.value) / 100)}
-          className="h-1 w-24 accent-[#2B303A]"
-          aria-label="Music volume"
-        />
-      </div>
+      {isOpen && (
+        <div className="flex w-[320px] max-w-[90vw] items-center gap-3 rounded-2xl border border-black/10 bg-white/80 px-4 py-3 shadow-lg backdrop-blur-md">
+          <Volume2 className="h-4 w-4 opacity-60" />
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={Math.round(volume * 100)}
+            onChange={(event) => setVolume(Number(event.target.value) / 100)}
+            className="h-1 w-full accent-[#2B303A]"
+            aria-label="Music volume"
+          />
+          <span className="text-[10px] uppercase tracking-[0.3em] opacity-60">
+            {currentIndex + 1}/{resolvedTracks.length}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
