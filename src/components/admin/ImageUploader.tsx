@@ -16,6 +16,23 @@ export type CropMode = "free" | "hero";
 const MAX_CLIENT_FILE_BYTES = 25 * 1024 * 1024;
 const MAX_IMAGE_DIMENSION = 2200;
 const JPEG_QUALITY = 0.86;
+const HEIC_MIME_TYPES = new Set(["image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence"]);
+
+function isHeicFile(file: File) {
+  const name = file.name.toLowerCase();
+  return HEIC_MIME_TYPES.has(file.type) || name.endsWith(".heic") || name.endsWith(".heif");
+}
+
+async function convertHeicToJpeg(file: File): Promise<File> {
+  const { default: heic2any } = await import("heic2any");
+  const output = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
+  const blob = Array.isArray(output) ? output[0] : output;
+  const baseName = file.name.replace(/\.[^/.]+$/, "");
+  return new File([blob], `${baseName}.jpg`, {
+    type: "image/jpeg",
+    lastModified: Date.now(),
+  });
+}
 
 async function loadImageFromFile(file: File): Promise<HTMLImageElement> {
   const objectUrl = URL.createObjectURL(file);
@@ -129,7 +146,15 @@ export function ImageUploader({
       
       if (cropMode === "hero") {
         // Always open crop for hero mode
-        const file = incomingFiles[0];
+        let file = incomingFiles[0];
+        if (isHeicFile(file)) {
+          try {
+            file = await convertHeicToJpeg(file);
+          } catch {
+            toast.error("Gagal mengonversi HEIC. Coba ubah ke JPG terlebih dulu.");
+            return;
+          }
+        }
         if (file.size > MAX_CLIENT_FILE_BYTES) {
           toast.error("Ukuran gambar terlalu besar (maks 25MB). Coba kompres dulu.");
           return;
@@ -139,12 +164,21 @@ export function ImageUploader({
         // Free mode: add directly without crop
         const preparedFiles = await Promise.all(
           incomingFiles.map(async (file) => {
-            if (file.size > MAX_CLIENT_FILE_BYTES) {
+            let normalizedFile = file;
+            if (isHeicFile(file)) {
+              try {
+                normalizedFile = await convertHeicToJpeg(file);
+              } catch {
+                toast.error("Gagal mengonversi HEIC. Coba ubah ke JPG terlebih dulu.");
+                return null;
+              }
+            }
+            if (normalizedFile.size > MAX_CLIENT_FILE_BYTES) {
               toast.error("Ukuran gambar terlalu besar (maks 25MB). Coba kompres dulu.");
               return null;
             }
             try {
-              return await prepareImageFile(file);
+              return await prepareImageFile(normalizedFile);
             } catch {
               toast.error("Gagal memproses gambar. Coba upload ulang.");
               return null;
