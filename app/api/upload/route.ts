@@ -14,6 +14,17 @@ function inferMimeTypeFromName(fileName: string | undefined) {
   if (name.endsWith('.gif')) return 'image/gif';
   return '';
 }
+
+function normalizeMimeType(type: string | undefined, fileName?: string) {
+  const lowered = (type || '').toLowerCase();
+  if (lowered === 'image/jpg' || lowered === 'image/pjpeg' || lowered === 'image/jfif') {
+    return 'image/jpeg';
+  }
+  if (!lowered || lowered === 'application/octet-stream') {
+    return inferMimeTypeFromName(fileName);
+  }
+  return lowered;
+}
 const MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
 
 function getVpsApiBaseUrl() {
@@ -51,10 +62,7 @@ export async function POST(request: Request) {
     }
 
     // 2. Validate file type (fallback to extension if type is missing)
-    const inferredType = inferMimeTypeFromName(file.name);
-    const effectiveType = file.type && file.type !== 'application/octet-stream'
-      ? file.type
-      : inferredType;
+    const effectiveType = normalizeMimeType(file.type, file.name);
     if (!effectiveType || !ALLOWED_TYPES.includes(effectiveType)) {
       return NextResponse.json(
         { success: false, error: 'Invalid file type. Only JPG/JPEG, PNG, WebP, and GIF are allowed.' },

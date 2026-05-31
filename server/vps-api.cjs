@@ -64,6 +64,14 @@ function getMimeTypeFromFileName(fileName) {
   return "application/octet-stream";
 }
 
+function normalizeUploadType(type) {
+  const lowered = String(type || "").toLowerCase();
+  if (lowered === "image/jpg" || lowered === "image/pjpeg" || lowered === "image/jfif") {
+    return "image/jpeg";
+  }
+  return lowered;
+}
+
 function getHeaderValue(req, name) {
   const value = req.headers[name.toLowerCase()];
   if (Array.isArray(value)) return value[0] || "";
@@ -232,7 +240,8 @@ const server = createServer(async (req, res) => {
         return;
       }
 
-      const contentType = getHeaderValue(req, "content-type").split(";")[0].trim().toLowerCase();
+      const rawType = getHeaderValue(req, "content-type").split(";")[0].trim();
+      const contentType = normalizeUploadType(rawType);
       if (!ALLOWED_UPLOAD_TYPES.has(contentType)) {
         sendJson(res, 400, { error: "Invalid file type" });
         return;
