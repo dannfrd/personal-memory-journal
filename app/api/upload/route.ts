@@ -5,6 +5,15 @@ import { basename } from 'path';
 
 // Allowed MIME types
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+
+function inferMimeTypeFromName(fileName: string | undefined) {
+  const name = (fileName || '').toLowerCase();
+  if (name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'image/jpeg';
+  if (name.endsWith('.png')) return 'image/png';
+  if (name.endsWith('.webp')) return 'image/webp';
+  if (name.endsWith('.gif')) return 'image/gif';
+  return '';
+}
 const MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
 
 function getVpsApiBaseUrl() {
@@ -41,10 +50,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'No file uploaded' }, { status: 400 });
     }
 
-    // 2. Validate file type
-    if (!ALLOWED_TYPES.includes(file.type)) {
+    // 2. Validate file type (fallback to extension if type is missing)
+    const inferredType = inferMimeTypeFromName(file.name);
+    const effectiveType = file.type && file.type !== 'application/octet-stream'
+      ? file.type
+      : inferredType;
+    if (!effectiveType || !ALLOWED_TYPES.includes(effectiveType)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid file type. Only JPG, PNG, WebP, and GIF are allowed.' },
+        { success: false, error: 'Invalid file type. Only JPG/JPEG, PNG, WebP, and GIF are allowed.' },
         { status: 400 }
       );
     }
@@ -81,7 +94,7 @@ export async function POST(request: Request) {
       uploadRes = await fetch(vpsUploadUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': file.type || 'application/octet-stream',
+          'Content-Type': effectiveType,
           'X-File-Name': filename,
           ...(uploadToken ? { 'X-Upload-Token': uploadToken } : {}),
           ...(internalSecret ? { 'X-Internal-Secret': internalSecret } : {}),

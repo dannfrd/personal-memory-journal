@@ -306,7 +306,7 @@ export function ImageUploader({
             <p className="mb-1 text-sm font-medium">
               {isHeroMode ? "Upload foto untuk Hero Slider" : "Click atau drag gambar untuk upload"}
             </p>
-            <p className="text-xs opacity-50">PNG, JPG, GIF, atau HEIC (max. 25MB)</p>
+            <p className="text-xs opacity-50">PNG, JPG/JPEG, GIF, atau HEIC (max. 25MB)</p>
             {isHeroMode && (
               <p className="mt-2 text-xs font-semibold text-rose-500/80">
                 ✂️ Crop 16:9 otomatis terbuka — pastikan area yang dipilih terlihat bagus di layar penuh
