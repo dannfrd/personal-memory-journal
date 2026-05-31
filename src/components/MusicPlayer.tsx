@@ -49,29 +49,39 @@ export function MusicPlayer({
   };
 
   if (resolvedSpotifyEmbedUrl) {
+    const spotifyHeight = isOpen ? 352 : 80;
+
     return (
       <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2">
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
-          aria-label={isOpen ? "Close music player" : "Open music player"}
-          className="flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-[#2B303A] shadow-lg backdrop-blur-md"
+          aria-label={isOpen ? "Minimize music player" : "Expand music player"}
+          aria-expanded={isOpen}
+          className="flex items-center gap-3 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-[#2B303A] shadow-lg backdrop-blur-md"
         >
-          {isOpen ? "Close" : "Music"}
+          <span className="flex flex-col items-start">
+            <span className="text-[10px] uppercase tracking-[0.3em] opacity-60">Now Playing</span>
+            <span className="text-xs font-semibold">{resolvedTitle}</span>
+          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.28em] opacity-70">
+            {isOpen ? "Minimize" : "Expand"}
+          </span>
         </button>
-        {isOpen && (
-          <div className="overflow-hidden rounded-2xl border border-black/10 bg-white/80 shadow-xl backdrop-blur-md">
-            <iframe
-              title="Spotify playlist"
-              src={resolvedSpotifyEmbedUrl}
-              width="320"
-              height="352"
-              style={{ border: 0 }}
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy"
-            />
-          </div>
-        )}
+        <div
+          className="overflow-hidden rounded-2xl border border-black/10 bg-white/80 shadow-xl backdrop-blur-md transition-all duration-300"
+          style={{ height: spotifyHeight }}
+        >
+          <iframe
+            title="Spotify playlist"
+            src={resolvedSpotifyEmbedUrl}
+            width={320}
+            height={spotifyHeight}
+            style={{ border: 0 }}
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+          />
+        </div>
       </div>
     );
   }
