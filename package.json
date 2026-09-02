@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -H ::",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -H ::",
     "lint": "eslint",
     "api:start": "node server/vps-api.cjs",
     "api:dev": "node --watch server/vps-api.cjs"
