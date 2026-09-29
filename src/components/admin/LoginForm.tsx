@@ -40,6 +40,7 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [turnstileStatus, setTurnstileStatus] = useState<"loading" | "ready" | "error" | "expired">("loading");
+  const [turnstileErrorCode, setTurnstileErrorCode] = useState<string | null>(null);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
@@ -71,24 +72,34 @@ export function LoginForm() {
         theme: "auto",
         size: "normal",
         callback: (token: string) => {
+          console.log("[Turnstile] SUCCESS — token received");
           setTurnstileToken(token);
           setTurnstileStatus("ready");
+          setTurnstileErrorCode(null);
           setError(null);
         },
         "error-callback": (errorCode) => {
-          console.warn("[Turnstile] Error callback triggered:", errorCode);
+          const code = errorCode ?? "unknown";
+          console.error("[Turnstile] ERROR callback:", code);
+          console.error("[Turnstile] Possible causes:");
+          console.error("  110200 = hostname not allowed (cek Turnstile dashboard)");
+          console.error("  110100/110110 = site key invalid");
+          console.error("  200500 = iframe challenges.cloudflare.com gagal load");
           setTurnstileToken(null);
           setTurnstileStatus("error");
+          setTurnstileErrorCode(code);
         },
         "expired-callback": () => {
-          console.warn("[Turnstile] Token expired");
+          console.warn("[Turnstile] Token expired — perlu refresh");
           setTurnstileToken(null);
           setTurnstileStatus("expired");
+          setTurnstileErrorCode(null);
         },
       });
 
       widgetIdRef.current = widgetId;
-      setTurnstileStatus("ready");
+      // JANGAN set 'ready' di sini — hanya callback() yang boleh set 'ready'
+      // Widget sudah di-render tapi belum tentu challenge selesai
     } catch (err) {
       console.error("[Turnstile] Failed to render widget:", err);
       setTurnstileStatus("error");
@@ -144,10 +155,11 @@ export function LoginForm() {
   const resetTurnstile = useCallback(() => {
     setTurnstileToken(null);
     setTurnstileStatus("loading");
+    setTurnstileErrorCode(null);
     if (widgetIdRef.current && window.turnstile) {
       try {
         window.turnstile.reset(widgetIdRef.current);
-        setTurnstileStatus("ready");
+        // Setelah reset, status tetap 'loading' sampai callback() dipanggil
       } catch {
         renderTurnstile();
       }
@@ -252,15 +264,29 @@ export function LoginForm() {
           />
 
           {turnstileStatus === "error" && (
-            <div className="mt-2 flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
-              <span>Gagal memuat verifikasi Cloudflare.</span>
-              <button
-                type="button"
-                onClick={resetTurnstile}
-                className="inline-flex items-center gap-1 font-medium underline hover:text-foreground"
-              >
-                <RefreshCw className="h-3 w-3" /> Coba lagi
-              </button>
+            <div className="mt-2 flex flex-col items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+              <div className="flex items-center gap-2">
+                <span>
+                  Gagal memuat verifikasi Cloudflare.
+                  {turnstileErrorCode && (
+                    <span className="ml-1 font-mono font-medium">
+                      (Error: {turnstileErrorCode})
+                    </span>
+                  )}
+                </span>
+                <button
+                  type="button"
+                  onClick={resetTurnstile}
+                  className="inline-flex items-center gap-1 font-medium underline hover:text-foreground"
+                >
+                  <RefreshCw className="h-3 w-3" /> Coba lagi
+                </button>
+              </div>
+              {turnstileErrorCode === "110200" && (
+                <p className="text-center text-amber-600/80 dark:text-amber-500/80">
+                  Hostname tidak diizinkan. Cek konfigurasi Turnstile di dashboard Cloudflare.
+                </p>
+              )}
             </div>
           )}
 
