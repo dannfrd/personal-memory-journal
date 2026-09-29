@@ -287,6 +287,11 @@ export function LoginForm() {
                   Hostname tidak diizinkan. Cek konfigurasi Turnstile di dashboard Cloudflare.
                 </p>
               )}
+              {(turnstileErrorCode === "400020" || turnstileErrorCode === "400021") && (
+                <p className="text-center text-amber-600/80 dark:text-amber-500/80">
+                  Site key tidak valid. Pastikan <code className="font-mono">NEXT_PUBLIC_TURNSTILE_SITE_KEY</code> di <code className="font-mono">.env</code> sesuai dengan dashboard Cloudflare.
+                </p>
+              )}
             </div>
           )}
 
