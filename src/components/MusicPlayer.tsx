@@ -20,6 +20,10 @@ export function MusicPlayer({
   const resolvedTitle = title ?? process.env.NEXT_PUBLIC_MUSIC_TITLE;
   const defaultTracks = [
     {
+      src: "/audio/Backstreet Boys - Shape Of My Heart (Official HD Video).mp3",
+      title: "Backstreet Boys - Shape Of My Heart",
+    },
+    {
       src: "/audio/ghea-1000x.mp3",
       title: "Ghea Indrawari - 1000X",
     },
