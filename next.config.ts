@@ -51,6 +51,15 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    const vpsApiUrl = process.env.VPS_API_BASE_URL || 'http://127.0.0.1:3001';
+    return [
+      {
+        source: '/uploads/:path*',
+        destination: `${vpsApiUrl}/uploads/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
