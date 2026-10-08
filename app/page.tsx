@@ -1,7 +1,7 @@
 import { EmptyState } from "@/src/components/EmptyState";
 import { HeroSlider } from "@/src/components/HeroSlider";
 import { IntroSection } from "@/src/components/IntroSection";
-import { MemoryGrid } from "@/src/components/MemoryGrid";
+import { MemoryIgGrid } from "@/src/components/MemoryIgGrid";
 import { MusicPlayer } from "@/src/components/MusicPlayer";
 import { Navbar } from "@/src/components/Navbar";
 import { fetchMemories } from "@/src/lib/vpsMemoryApi";
@@ -46,7 +46,16 @@ export default async function Home() {
 
         <div id="gallery">
           {!error && memories && memories.length > 0 ? (
-            <MemoryGrid memories={memories} />
+            <div className="max-w-5xl mx-auto px-4 pb-20 pt-12">
+              <div className="mb-8 flex items-center gap-4">
+                <div className="h-px flex-1 bg-black/10" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#2B303A]/50">
+                  {memories.length} Memories
+                </span>
+                <div className="h-px flex-1 bg-black/10" />
+              </div>
+              <MemoryIgGrid memories={memories} />
+            </div>
           ) : !error ? (
           <div className="py-40 px-8 max-w-5xl mx-auto min-h-[50vh] flex items-center justify-center">
             <EmptyState 
