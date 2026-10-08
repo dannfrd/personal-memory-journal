@@ -43,6 +43,26 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lovelog.my.id',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        pathname: '/uploads/**',
+      },
+    ],
+    unoptimized: false,
+  },
   async headers() {
     return [
       {
