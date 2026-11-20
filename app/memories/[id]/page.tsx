@@ -1,22 +1,13 @@
 import { MemoryDetailGallery } from "@/src/components/MemoryDetailGallery";
 import { Navbar } from "@/src/components/Navbar";
 import { CommentModalButton } from "@/src/components/social/CommentModalButton";
-import { Comments } from "@/src/components/social/Comments";
 import { LikeButton } from "@/src/components/social/LikeButton";
 import { ShareButton } from "@/src/components/social/ShareButton";
 import { formatDate, getMemoryUrl } from "@/src/lib/utils";
 import { fetchMemories, fetchMemoryById } from "@/src/lib/vpsMemoryApi";
 import type { Memory } from "@/src/types";
 import type { Metadata } from "next";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Calendar,
-  Images,
-  MapPin,
-  Sparkles,
-} from "lucide-react";
-import Image from "next/image";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -34,7 +25,7 @@ export async function generateMetadata({
       return { title: "Memori Tidak Ditemukan — Lovelog" };
     }
     const title = memory.title
-      ? `${memory.title} — Lovelog Memory Journal`
+      ? `${memory.title} — Lovelog`
       : `Memori ${formatDate(memory.memory_date)} — Lovelog`;
     const description =
       memory.description.length > 160
@@ -87,7 +78,6 @@ export default async function MemoryDetail({
 
   const likeCount = memory.likes?.[0]?.count || 0;
   const commentCount = memory.comments?.[0]?.count || 0;
-  const photoCount = 1 + (memory.post_images?.length || 0);
 
   const currentIdx = allMemories.findIndex((m) => m.id === memory?.id);
   const prevMemory = currentIdx > 0 ? allMemories[currentIdx - 1] : null;
@@ -104,95 +94,53 @@ export default async function MemoryDetail({
     <div className="min-h-screen font-sans bg-[#F6F3EC] text-[#1F242D] selection:bg-[#1F242D] selection:text-[#F6F3EC]">
       <Navbar />
 
-      <main className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-12 py-8 sm:py-12">
-        {/* Top Breadcrumb & Chapter Navigation */}
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-black/10 pb-5">
-          <Link
-            href="/#gallery"
-            className="group inline-flex min-h-[40px] items-center gap-2.5 rounded-full border border-black/15 bg-white px-4 py-2 text-xs font-bold tracking-[0.2em] uppercase text-[#1F242D] shadow-sm transition-all hover:bg-[#1F242D] hover:text-[#F6F3EC]"
-          >
-            <ArrowLeft
-              className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5"
-              aria-hidden="true"
-            />
-            <span>Kembali ke Arsip</span>
-          </Link>
-
-          <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.22em] text-[#1F242D]/60">
-            {currentIdx >= 0 && (
-              <span className="rounded-full bg-[#EFEAE1] px-3 py-1.5 text-[#1F242D]">
-                Lembaran No. {String(currentIdx + 1).padStart(2, "0")} dari{" "}
-                {String(allMemories.length).padStart(2, "0")}
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white border border-black/10 px-3 py-1.5 text-[#1F242D]">
-              <Images className="h-3.5 w-3.5" aria-hidden="true" />
-              {photoCount} Foto
-            </span>
-          </div>
-        </div>
-
-        {/* Main Split Editorial Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          {/* Left Sticky Interactive Showcase (7 cols) */}
-          <div className="lg:col-span-7 lg:sticky lg:top-24">
-            <div className="relative h-[56vh] sm:h-[68vh] lg:h-[76vh] w-full overflow-hidden rounded-3xl border border-black/10 bg-[#181A1D] shadow-2xl">
-              <MemoryDetailGallery
-                coverImage={memory.cover_image_url}
-                images={memory.post_images ?? []}
-                frameStyle={memory.frame_style}
+      <main className="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)]">
+        {/* Left Clean Story Column */}
+        <div className="relative z-10 flex w-full flex-col justify-between px-6 py-12 sm:px-14 sm:py-20 lg:w-1/2 lg:px-20 xl:px-28 bg-[#F6F3EC]">
+          <div>
+            <Link
+              href="/#gallery"
+              className="group mb-12 inline-flex items-center gap-2.5 text-xs font-bold tracking-[0.2em] uppercase text-[#1F242D]/60 hover:text-[#1F242D] transition-colors"
+            >
+              <ArrowLeft
+                className="h-4 w-4 transition-transform group-hover:-translate-x-1"
+                aria-hidden="true"
               />
-            </div>
-          </div>
+              <span>Kembali ke Galeri</span>
+            </Link>
 
-          {/* Right Editorial Story Column (5 cols) */}
-          <div className="lg:col-span-5 flex flex-col">
-            <article className="rounded-3xl border border-black/10 bg-white p-6 sm:p-10 shadow-sm">
-              {/* Metadata Pills */}
-              <div className="mb-6 flex flex-wrap items-center gap-2 text-[11px] font-bold tracking-[0.18em] uppercase">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F6F3EC] px-3 py-1.5 text-[#1F242D]/80 border border-black/10">
-                  <Calendar className="h-3.5 w-3.5 text-amber-800" aria-hidden="true" />
-                  {formatDate(memory.memory_date)}
-                </span>
+            <article className="max-w-[60ch]">
+              {/* Minimal Inline Metadata */}
+              <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-semibold tracking-[0.18em] uppercase text-[#1F242D]/60">
+                <span>{formatDate(memory.memory_date)}</span>
                 {memory.location && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F6F3EC] px-3 py-1.5 text-[#1F242D]/80 border border-black/10">
-                    <MapPin className="h-3.5 w-3.5 text-amber-800" aria-hidden="true" />
-                    {memory.location}
-                  </span>
+                  <>
+                    <span>&bull;</span>
+                    <span>{memory.location}</span>
+                  </>
                 )}
                 {memory.mood && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-900/10 px-3 py-1.5 text-amber-900 border border-amber-900/20">
-                    <Sparkles className="h-3 w-3" aria-hidden="true" />
-                    {memory.mood}
-                  </span>
+                  <>
+                    <span>&bull;</span>
+                    <span>{memory.mood}</span>
+                  </>
                 )}
               </div>
 
-              {/* Story Title */}
-              <h1 className="mb-6 font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold leading-[1.12] tracking-tight text-[#1F242D]">
-                {memory.title || "Sepotong Kenangan"}
-              </h1>
+              {memory.title && (
+                <h1 className="mb-8 font-serif text-4xl sm:text-5xl font-medium leading-[1.15] tracking-tight text-[#1F242D]">
+                  {memory.title}
+                </h1>
+              )}
 
-              <div className="mb-8 h-px w-16 bg-amber-900/40" />
-
-              {/* Story Body with Editorial Drop-Cap on first paragraph */}
               <div className="font-serif text-xl sm:text-2xl leading-[1.75] text-[#1F242D]/90 space-y-6">
                 {paragraphs.map((paragraph: string, idx: number) => (
-                  <p
-                    key={idx}
-                    className={
-                      idx === 0
-                        ? "first-letter:float-left first-letter:mr-3 first-letter:font-serif first-letter:text-5xl first-letter:font-bold first-letter:leading-none first-letter:text-amber-900"
-                        : ""
-                    }
-                  >
-                    {paragraph}
-                  </p>
+                  <p key={idx}>{paragraph}</p>
                 ))}
               </div>
 
               {/* Action Bar */}
-              <div className="mt-10 pt-6 border-t border-black/10 flex flex-wrap items-center gap-3">
+              <div className="mt-12 pt-8 border-t border-black/10 flex flex-wrap items-center gap-3">
                 <LikeButton postId={memory.id} initialCount={likeCount} />
                 <CommentModalButton
                   postId={memory.id}
@@ -201,83 +149,48 @@ export default async function MemoryDetail({
                 <ShareButton memory={memory} />
               </div>
             </article>
-
-            {/* Inline Reflections Card */}
-            <div className="mt-8 rounded-3xl border border-black/10 bg-white p-6 sm:p-10 shadow-sm">
-              <Comments postId={memory.id} />
-            </div>
           </div>
+
+          {/* Subtle Prev / Next Links */}
+          {(prevMemory || nextMemory) && (
+            <div className="mt-14 pt-6 border-t border-black/10 flex items-center justify-between gap-4 text-xs font-semibold text-[#1F242D]/65">
+              {prevMemory ? (
+                <Link
+                  href={getMemoryUrl(prevMemory)}
+                  className="inline-flex items-center gap-2 hover:text-[#1F242D] transition-colors truncate max-w-[45%]"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span className="truncate">
+                    {prevMemory.title || formatDate(prevMemory.memory_date)}
+                  </span>
+                </Link>
+              ) : (
+                <span />
+              )}
+
+              {nextMemory ? (
+                <Link
+                  href={getMemoryUrl(nextMemory)}
+                  className="inline-flex items-center gap-2 hover:text-[#1F242D] transition-colors truncate max-w-[45%]"
+                >
+                  <span className="truncate">
+                    {nextMemory.title || formatDate(nextMemory.memory_date)}
+                  </span>
+                  <ArrowRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                </Link>
+              ) : null}
+            </div>
+          )}
         </div>
 
-        {/* Previous / Next Memory Chapter Navigation */}
-        {(prevMemory || nextMemory) && (
-          <section
-            aria-label="Navigasi Memori Lainnya"
-            className="mt-16 pt-10 border-t border-black/10 grid grid-cols-1 sm:grid-cols-2 gap-6"
-          >
-            {prevMemory ? (
-              <Link
-                href={getMemoryUrl(prevMemory)}
-                className="group flex items-center gap-4 rounded-2xl border border-black/10 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-[#E5DEC9]">
-                  <Image
-                    src={prevMemory.cover_image_url}
-                    alt={prevMemory.title || "Memori Sebelumnya"}
-                    fill
-                    sizes="80px"
-                    quality={65}
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#1F242D]/55">
-                    <ArrowLeft className="h-3 w-3" aria-hidden="true" />
-                    Memori Sebelumnya
-                  </span>
-                  <p className="mt-1 font-serif text-xl font-semibold text-[#1F242D] truncate">
-                    {prevMemory.title || prevMemory.description}
-                  </p>
-                  <p className="text-xs text-[#1F242D]/55">
-                    {formatDate(prevMemory.memory_date)}
-                  </p>
-                </div>
-              </Link>
-            ) : (
-              <div />
-            )}
-
-            {nextMemory ? (
-              <Link
-                href={getMemoryUrl(nextMemory)}
-                className="group flex items-center justify-end gap-4 rounded-2xl border border-black/10 bg-white p-4 text-right shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <div className="min-w-0 flex-1">
-                  <span className="inline-flex items-center justify-end gap-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#1F242D]/55">
-                    Memori Berikutnya
-                    <ArrowRight className="h-3 w-3" aria-hidden="true" />
-                  </span>
-                  <p className="mt-1 font-serif text-xl font-semibold text-[#1F242D] truncate">
-                    {nextMemory.title || nextMemory.description}
-                  </p>
-                  <p className="text-xs text-[#1F242D]/55">
-                    {formatDate(nextMemory.memory_date)}
-                  </p>
-                </div>
-                <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-[#E5DEC9]">
-                  <Image
-                    src={nextMemory.cover_image_url}
-                    alt={nextMemory.title || "Memori Berikutnya"}
-                    fill
-                    sizes="80px"
-                    quality={65}
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-              </Link>
-            ) : null}
-          </section>
-        )}
+        {/* Right Sticky Full-Height Photo Showcase */}
+        <div className="relative order-first h-[58vh] w-full sm:h-[68vh] lg:order-last lg:h-[calc(100vh-4rem)] lg:w-1/2 lg:sticky lg:top-16 bg-[#181A1D]">
+          <MemoryDetailGallery
+            coverImage={memory.cover_image_url}
+            images={memory.post_images ?? []}
+            frameStyle={memory.frame_style}
+          />
+        </div>
       </main>
     </div>
   );
