@@ -29,7 +29,8 @@ if [ -n "$REMOTE_SHA" ] && [ "$LOCAL_SHA" != "$REMOTE_SHA" ]; then
   echo "==================================================================" >> "$LOG_FILE"
   echo "[$(date -Is)] New commit detected: $LOCAL_SHA -> $REMOTE_SHA" >> "$LOG_FILE"
   git fetch origin main >> "$LOG_FILE" 2>&1
-  ./ops/scripts/deploy.sh >> "$LOG_FILE" 2>&1
+  sed -i 's/\r$//' ops/scripts/deploy.sh 2>/dev/null || true
+  bash ./ops/scripts/deploy.sh >> "$LOG_FILE" 2>&1
   echo "[$(date -Is)] Successfully deployed $REMOTE_SHA" >> "$LOG_FILE"
 fi
 EOF
