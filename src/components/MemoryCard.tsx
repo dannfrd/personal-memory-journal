@@ -9,6 +9,7 @@ import Link from "next/link";
 import { memo, useState } from "react";
 import { MemoryDetailGallery } from "./MemoryDetailGallery";
 import { LikeButton } from "./social/LikeButton";
+import { ShareButton } from "./social/ShareButton";
 
 const Comments = dynamic(() => import("./social/Comments").then((m) => m.Comments), {
   ssr: false,
@@ -63,7 +64,7 @@ export const MemoryCard = memo(function MemoryCard({ memory, index = 0 }: { memo
           </Link>
             
           <div className="flex flex-col items-start gap-8 mb-12">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               <LikeButton postId={memory.id} initialCount={memory.likes?.[0]?.count || 0} />
               <button 
                 onClick={() => setShowComments(!showComments)}
@@ -72,6 +73,7 @@ export const MemoryCard = memo(function MemoryCard({ memory, index = 0 }: { memo
                 <MessageCircle className="h-4 w-4 transition-transform group-hover:scale-110" />
                 <span>{memory.comments?.[0]?.count || 0} Reflections</span>
               </button>
+              <ShareButton memory={memory} />
             </div>
             
             {showComments && (

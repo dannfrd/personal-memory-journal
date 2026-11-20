@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Comments } from "./social/Comments";
 import { LikeButton } from "./social/LikeButton";
+import { ShareButton } from "./social/ShareButton";
 
 interface MemoryIgModalProps {
   memory: Memory;
@@ -279,17 +280,18 @@ export function MemoryIgModal({
           </div>
 
           {/* Footer - Sticky */}
-          <div className="sticky bottom-0 bg-[#FAF8F5]/95 backdrop-blur-md border-t border-black/10 px-5 py-3.5 flex items-center justify-between gap-3">
+          <div className="sticky bottom-0 bg-[#FAF8F5]/95 backdrop-blur-md border-t border-black/10 px-5 py-3.5 flex items-center justify-between gap-2.5">
             <LikeButton
               postId={memory.id}
               initialCount={memory.likes?.[0]?.count || 0}
             />
+            <ShareButton memory={memory} />
 
             <Link
               href={getMemoryUrl(memory)}
               className="flex-1 text-center py-3 px-4 bg-[#2B303A] hover:bg-[#1F242D] text-[#FAF8F5] rounded-full transition-colors text-xs font-bold uppercase tracking-[0.18em] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2B303A]"
             >
-              Buka Halaman Penuh
+              Buka Cerita
             </Link>
           </div>
         </div>

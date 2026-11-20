@@ -3,9 +3,11 @@ import { Navbar } from "@/src/components/Navbar";
 import { CommentModalButton } from "@/src/components/social/CommentModalButton";
 import { Comments } from "@/src/components/social/Comments";
 import { LikeButton } from "@/src/components/social/LikeButton";
+import { ShareButton } from "@/src/components/social/ShareButton";
 import { formatDate, getMemoryUrl } from "@/src/lib/utils";
 import { fetchMemories, fetchMemoryById } from "@/src/lib/vpsMemoryApi";
 import type { Memory } from "@/src/types";
+import type { Metadata } from "next";
 import {
   ArrowLeft,
   ArrowRight,
@@ -19,6 +21,45 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export const revalidate = 30;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const memory = await fetchMemoryById(id);
+    if (!memory) {
+      return { title: "Memori Tidak Ditemukan — Lovelog" };
+    }
+    const title = memory.title
+      ? `${memory.title} — Lovelog Memory Journal`
+      : `Memori ${formatDate(memory.memory_date)} — Lovelog`;
+    const description =
+      memory.description.length > 160
+        ? `${memory.description.slice(0, 157)}...`
+        : memory.description;
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        type: "article",
+        images: memory.cover_image_url ? [{ url: memory.cover_image_url }] : [],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: memory.cover_image_url ? [memory.cover_image_url] : [],
+      },
+    };
+  } catch {
+    return { title: "Lovelog — Personal Memory Journal" };
+  }
+}
 
 export default async function MemoryDetail({
   params,
@@ -157,6 +198,7 @@ export default async function MemoryDetail({
                   postId={memory.id}
                   initialCount={commentCount}
                 />
+                <ShareButton memory={memory} />
               </div>
             </article>
 

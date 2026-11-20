@@ -19,6 +19,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { memo, useCallback, useMemo, useState } from "react";
+import { ShareButton } from "./social/ShareButton";
 
 const MemoryIgModal = dynamic(
   () => import("./MemoryIgModal").then((mod) => mod.MemoryIgModal),
@@ -123,7 +124,7 @@ const MemoryEditorialCard = memo(function MemoryEditorialCard({
 
         {/* Card Footer: Social Counts & Full Story Link */}
         <div className="mt-5 pt-4 border-t border-black/10 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-4 text-xs font-semibold text-[#1F242D]/65">
+          <div className="flex items-center gap-3.5 text-xs font-semibold text-[#1F242D]/65">
             <button
               type="button"
               onClick={() => onSelect(memory.id)}
@@ -142,6 +143,7 @@ const MemoryEditorialCard = memo(function MemoryEditorialCard({
               <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
               <span>{commentCount}</span>
             </button>
+            <ShareButton memory={memory} variant="icon" />
           </div>
 
           <Link
