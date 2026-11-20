@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { PageContainer } from "../PageContainer";
+import { MusicPlayer } from "../MusicPlayer";
 import { SignOutButton } from "./SignOutButton";
 
 export function AdminHeader() {
@@ -54,6 +55,7 @@ export function AdminHeader() {
             >
               Lihat Galeri
             </Link>
+            <MusicPlayer />
             <div className="h-3.5 w-px bg-black/15" />
             <SignOutButton />
           </nav>

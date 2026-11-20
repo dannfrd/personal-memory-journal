@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+import { AudioProvider } from "@/src/components/MusicPlayer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -39,7 +40,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${cormorantSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
+        <AudioProvider>
+          {children}
+        </AudioProvider>
         <Toaster position="bottom-center" toastOptions={{ className: 'font-sans' }} />
       </body>
     </html>
