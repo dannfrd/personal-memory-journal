@@ -10,7 +10,7 @@ cat << 'EOF' > /usr/local/bin/lovelog-autodeploy.sh
 #!/usr/bin/env bash
 set -euo pipefail
 
-export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+export PATH="/root/.nvm/versions/node/$(ls /root/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:/root/.local/share/fnm/aliases/default/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 APP_DIR="/var/www/personal-memory-journal"
 LOCK_FILE="/tmp/lovelog-deploy.lock"
 LOG_FILE="/var/log/lovelog-deploy.log"
@@ -29,9 +29,6 @@ if [ -n "$REMOTE_SHA" ] && [ "$LOCAL_SHA" != "$REMOTE_SHA" ]; then
   echo "==================================================================" >> "$LOG_FILE"
   echo "[$(date -Is)] New commit detected: $LOCAL_SHA -> $REMOTE_SHA" >> "$LOG_FILE"
   git fetch origin main >> "$LOG_FILE" 2>&1
-  git reset --hard origin/main >> "$LOG_FILE" 2>&1
-  sed -i 's/\r$//' ops/scripts/deploy.sh
-  chmod +x ops/scripts/deploy.sh
   ./ops/scripts/deploy.sh >> "$LOG_FILE" 2>&1
   echo "[$(date -Is)] Successfully deployed $REMOTE_SHA" >> "$LOG_FILE"
 fi
