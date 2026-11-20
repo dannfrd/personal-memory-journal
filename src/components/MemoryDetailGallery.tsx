@@ -43,12 +43,12 @@ export function MemoryDetailGallery({ coverImage, images = [], memoryId, frameSt
       <>
         {/* Blurred Background */}
         <div className="absolute inset-0 z-0 overflow-hidden hidden sm:block">
-           <Image src={coverImage} alt="Memory Background" fill className="object-cover opacity-50 blur-2xl scale-125" unoptimized />
+           <Image src={coverImage} alt="Memory Background" fill sizes="20vw" quality={30} className="object-cover opacity-50 blur-2xl scale-125" />
         </div>
         {/* Main Image */}
         <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-12 z-10 pointer-events-none">
           <div className={`relative h-full max-h-full w-full pointer-events-auto flex items-center justify-center`}>
-            <Image src={coverImage} alt="Memory" fill className={`object-contain ${frameClasses}`} sizes="(max-width: 1024px) 100vw, 50vw" unoptimized priority />
+            <Image src={coverImage} alt="Memory" fill className={`object-contain ${frameClasses}`} sizes="(max-width: 1024px) 100vw, 50vw" quality={85} priority />
           </div>
         </div>
       </>
@@ -76,7 +76,7 @@ export function MemoryDetailGallery({ coverImage, images = [], memoryId, frameSt
            transition={{ duration: 0.6 }}
            className="absolute inset-0 z-0 hidden sm:block overflow-hidden"
          >
-           <Image src={allImages[index]} alt="Blur" fill className="object-cover opacity-50 blur-2xl scale-125" unoptimized />
+           <Image src={allImages[index]} alt="Blur" fill sizes="20vw" quality={30} className="object-cover opacity-50 blur-2xl scale-125" />
          </motion.div>
       </AnimatePresence>
 
@@ -119,10 +119,14 @@ export function MemoryDetailGallery({ coverImage, images = [], memoryId, frameSt
             }}
             className={`relative h-full w-full pointer-events-auto flex items-center justify-center`}
           >
-            <img
+            <Image
               src={allImages[index]}
               alt="Memory Gallery Image"
-              className={`max-h-full max-w-full object-contain ${frameClasses} pointer-events-none select-none`}
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              quality={85}
+              priority={index === 0}
+              className={`object-contain ${frameClasses} pointer-events-none select-none`}
             />
           </motion.div>
         </div>

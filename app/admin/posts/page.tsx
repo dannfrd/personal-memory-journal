@@ -58,7 +58,7 @@ export default async function AdminPostsPage() {
                       <tr key={post.id} className="transition-colors hover:bg-black/[0.01] dark:hover:bg-white/[0.01]">
                         <td className="px-6 py-4">
                           <div className="relative h-12 w-10 overflow-hidden rounded-md bg-black/5 dark:bg-white/5">
-                            <Image src={post.cover_image_url} alt="Memory" fill className="object-cover" unoptimized />
+                            <Image src={post.cover_image_url} alt="Memory" fill sizes="48px" quality={60} className="object-cover" />
                           </div>
                         </td>
                         <td className="px-6 py-4 max-w-xs text-foreground/80">

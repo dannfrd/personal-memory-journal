@@ -1,8 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { MessageCircle } from "lucide-react";
-import { Comments } from "./Comments";
+
+const Comments = dynamic(() => import("./Comments").then((m) => m.Comments), {
+  ssr: false,
+});
 
 export function CommentModalButton({ 
   postId, 

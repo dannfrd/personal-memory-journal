@@ -9,7 +9,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-export const revalidate = 0;
+export const revalidate = 30;
 
 export default async function MemoryDetail({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;

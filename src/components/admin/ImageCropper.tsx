@@ -16,7 +16,7 @@ interface ImageCropperProps {
 }
 
 const MAX_CROP_DIMENSION = 2400;
-const JPEG_QUALITY = 0.86;
+const WEBP_QUALITY = 0.85;
 
 function centerAspectCrop(
   mediaWidth: number,
@@ -103,7 +103,8 @@ export function ImageCropper({
         (blob) => {
           if (!blob) return;
           const baseName = fileName.replace(/\.[^/.]+$/, "");
-          const croppedName = `${baseName}_cropped.jpg`;
+          const ext = blob.type === "image/webp" ? "webp" : "jpg";
+          const croppedName = `${baseName}_cropped.${ext}`;
           const croppedFile = new File([blob], croppedName, {
             type: blob.type,
             lastModified: Date.now(),
@@ -111,8 +112,8 @@ export function ImageCropper({
           onCropComplete(croppedFile);
           setIsProcessing(false);
         },
-        "image/jpeg",
-        JPEG_QUALITY
+        "image/webp",
+        WEBP_QUALITY
       );
     } catch {
       setIsProcessing(false);

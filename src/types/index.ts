@@ -1,5 +1,5 @@
 export interface Memory {
-  id: string; // UUID from supabase
+  id: string; // UUID primary key
   title?: string | null;
   cover_image_url: string;
   hero_image_url?: string | null; // 16:9 cropped version for hero slider

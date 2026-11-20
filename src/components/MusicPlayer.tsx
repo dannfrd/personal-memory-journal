@@ -125,10 +125,9 @@ export function MusicPlayer({
       <audio
         ref={audioRef}
         src={encodedSrc}
-        autoPlay
         playsInline
         loop={!hasMultipleTracks}
-        preload="auto"
+        preload="none"
         crossOrigin={isRemoteSource ? "anonymous" : undefined}
         onLoadedMetadata={() => setReadySrc(encodedSrc)}
         onCanPlay={() => {

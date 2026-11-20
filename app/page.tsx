@@ -8,7 +8,7 @@ import { fetchMemories } from "@/src/lib/vpsMemoryApi";
 
 import type { Memory } from "@/src/types";
 
-export const revalidate = 0;
+export const revalidate = 30;
 
 export default async function Home() {
   let memories: Memory[] = [];

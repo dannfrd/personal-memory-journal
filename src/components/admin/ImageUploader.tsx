@@ -14,8 +14,8 @@ import { ImageCropper } from "./ImageCropper";
 export type CropMode = "free" | "hero";
 
 const MAX_CLIENT_FILE_BYTES = 25 * 1024 * 1024;
-const MAX_IMAGE_DIMENSION = 2200;
-const JPEG_QUALITY = 0.86;
+const MAX_IMAGE_DIMENSION = 2000;
+const WEBP_QUALITY = 0.84;
 const HEIC_MIME_TYPES = new Set(["image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence"]);
 
 function isHeicFile(file: File) {
@@ -59,7 +59,9 @@ async function prepareImageFile(file: File): Promise<File> {
   const targetWidth = Math.max(1, Math.round(img.width * scale));
   const targetHeight = Math.max(1, Math.round(img.height * scale));
 
-  const shouldReencode = scale < 1 || file.size > 3 * 1024 * 1024;
+  // IMG-01 & BE-05: Always convert non-WebP/AVIF uploads to optimized WebP on client before uploading
+  const isAlreadyModern = file.type === "image/webp" || file.type === "image/avif";
+  const shouldReencode = !isAlreadyModern || scale < 1 || file.size > 1.5 * 1024 * 1024;
   if (!shouldReencode) return file;
 
   const canvas = document.createElement("canvas");
@@ -71,21 +73,19 @@ async function prepareImageFile(file: File): Promise<File> {
 
   ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
-  const outputType = file.type === "image/png" ? "image/png" : "image/jpeg";
-  const outputQuality = outputType === "image/jpeg" ? JPEG_QUALITY : undefined;
-
+  const outputType = "image/webp";
   const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
       (result) => (result ? resolve(result) : reject(new Error("Image conversion failed"))),
       outputType,
-      outputQuality
+      WEBP_QUALITY
     );
   });
 
   const baseName = file.name.replace(/\.[^/.]+$/, "");
-  const extension = outputType === "image/png" ? "png" : "jpg";
+  const extension = blob.type === "image/webp" ? "webp" : "jpg";
   return new File([blob], `${baseName}_optimized.${extension}`, {
-    type: outputType,
+    type: blob.type || outputType,
     lastModified: Date.now(),
   });
 }

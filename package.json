@@ -8,7 +8,8 @@
     "start": "next start -H ::",
     "lint": "eslint",
     "api:start": "node server/vps-api.cjs",
-    "api:dev": "node --watch server/vps-api.cjs"
+    "api:dev": "node --watch server/vps-api.cjs",
+    "bench:api": "node ops/testing/benchmark-api.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

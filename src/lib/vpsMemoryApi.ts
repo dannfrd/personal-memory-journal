@@ -99,7 +99,16 @@ function getErrorMessage(error: unknown): string {
   return String(error);
 }
 
-async function requestJson<T>(path: string, init: RequestInit = {}, allowNotFound = false): Promise<T | null> {
+export interface FetchPaginationOptions {
+  page?: number;
+  limit?: number;
+}
+
+async function requestJson<T>(
+  path: string,
+  init: RequestInit & { next?: { revalidate?: number; tags?: string[] } } = {},
+  allowNotFound = false
+): Promise<T | null> {
   const headers = new Headers(init.headers);
   if (init.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
@@ -112,13 +121,20 @@ async function requestJson<T>(path: string, init: RequestInit = {}, allowNotFoun
   }
 
   const url = buildUrl(path);
+  const isGet = !init.method || init.method.toUpperCase() === "GET";
 
   let res: Response;
   try {
     res = await fetch(url, {
       ...init,
       headers,
-      cache: "no-store",
+      ...(init.cache
+        ? { cache: init.cache }
+        : init.next
+          ? { next: init.next }
+          : isGet
+            ? { next: { revalidate: 30, tags: ["memories"] } }
+            : { cache: "no-store" }),
     });
   } catch (error) {
     throw new Error(`Cannot reach VPS API at ${url}. ${getErrorMessage(error)}`);
@@ -151,18 +167,36 @@ async function requestJson<T>(path: string, init: RequestInit = {}, allowNotFoun
   return JSON.parse(text) as T;
 }
 
-export async function fetchMemories(): Promise<Memory[]> {
-  const data = (await requestJson<any[]>("/memories")) ?? [];
+export async function fetchMemories(options?: FetchPaginationOptions): Promise<Memory[]> {
+  const params = new URLSearchParams();
+  if (options?.page) params.set("page", String(options.page));
+  if (options?.limit) params.set("limit", String(options.limit));
+  const query = params.toString();
+  const endpoint = query ? `/memories?${query}` : "/memories";
+
+  const data = (await requestJson<any[]>(endpoint, {
+    next: { revalidate: 30, tags: ["memories"] },
+  })) ?? [];
   return data.map((item) => normalizeMemory(item));
 }
 
 export async function fetchMemoryById(id: string): Promise<Memory | null> {
-  const data = await requestJson<any>(`/memories/${encodeURIComponent(id)}`, {}, true);
+  const data = await requestJson<any>(
+    `/memories/${encodeURIComponent(id)}`,
+    { next: { revalidate: 30, tags: ["memories", `memory-${id}`] } },
+    true
+  );
   return data ? normalizeMemory(data) : null;
 }
 
-export async function fetchAdminComments(): Promise<AdminComment[]> {
-  const data = (await requestJson<any[]>("/admin/comments")) ?? [];
+export async function fetchAdminComments(options?: FetchPaginationOptions): Promise<AdminComment[]> {
+  const params = new URLSearchParams();
+  if (options?.page) params.set("page", String(options.page));
+  if (options?.limit) params.set("limit", String(options.limit));
+  const query = params.toString();
+  const endpoint = query ? `/admin/comments?${query}` : "/admin/comments";
+
+  const data = (await requestJson<any[]>(endpoint, { cache: "no-store" })) ?? [];
   return data.map((raw) => ({
     ...normalizeComment(raw),
     memory: raw?.memory
@@ -213,7 +247,8 @@ export async function removeLike(postId: string, sessionIdentifier: string): Pro
 
 export async function getLikeStatus(postId: string, sessionIdentifier: string): Promise<boolean> {
   const data = await requestJson<{ hasLiked?: boolean }>(
-    `/memories/${encodeURIComponent(postId)}/likes/status?sessionIdentifier=${encodeURIComponent(sessionIdentifier)}`
+    `/memories/${encodeURIComponent(postId)}/likes/status?sessionIdentifier=${encodeURIComponent(sessionIdentifier)}`,
+    { cache: "no-store" }
   );
   return Boolean(data?.hasLiked);
 }
@@ -231,7 +266,10 @@ export async function addMemoryComment(
 }
 
 export async function fetchMemoryComments(postId: string): Promise<Comment[]> {
-  const data = (await requestJson<any[]>(`/memories/${encodeURIComponent(postId)}/comments`)) ?? [];
+  const data = (await requestJson<any[]>(
+    `/memories/${encodeURIComponent(postId)}/comments`,
+    { next: { revalidate: 15, tags: [`comments-${postId}`] } }
+  )) ?? [];
   return data.map((item) => normalizeComment(item));
 }
 

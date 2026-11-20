@@ -1,6 +1,6 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 import {
   addLike,
   addMemoryComment,
@@ -39,6 +39,8 @@ export async function saveMemory(data: MemoryData, postId?: string) {
       postId = await createMemory(data) ?? undefined;
     }
 
+    revalidateTag('memories', 'max')
+    if (postId) revalidateTag(`memory-${postId}`, 'max')
     revalidatePath('/')
     revalidatePath('/admin/posts')
     return { success: true, postId }
@@ -51,6 +53,8 @@ export async function saveMemory(data: MemoryData, postId?: string) {
 export async function deleteMemory(postId: string) {
   try {
     await removeMemory(postId)
+    revalidateTag('memories', 'max')
+    revalidateTag(`memory-${postId}`, 'max')
     revalidatePath('/')
     revalidatePath('/admin/posts')
     return { success: true }
@@ -63,6 +67,8 @@ export async function deleteMemory(postId: string) {
 export async function likeMemory(postId: string, sessionIdentifier: string) {
   try {
     await addLike(postId, sessionIdentifier)
+    revalidateTag('memories', 'max')
+    revalidateTag(`memory-${postId}`, 'max')
     revalidatePath(`/memories/${postId}`)
     return { success: true }
   } catch (error: unknown) {
@@ -73,6 +79,8 @@ export async function likeMemory(postId: string, sessionIdentifier: string) {
 export async function unlikeMemory(postId: string, sessionIdentifier: string) {
   try {
     await removeLike(postId, sessionIdentifier)
+    revalidateTag('memories', 'max')
+    revalidateTag(`memory-${postId}`, 'max')
     revalidatePath(`/memories/${postId}`)
     return { success: true }
   } catch (error: unknown) {
@@ -83,6 +91,9 @@ export async function unlikeMemory(postId: string, sessionIdentifier: string) {
 export async function addComment(postId: string, username: string, content: string, parentId?: string | null) {
   try {
     await addMemoryComment(postId, username, content, parentId)
+    revalidateTag('memories', 'max')
+    revalidateTag(`memory-${postId}`, 'max')
+    revalidateTag(`comments-${postId}`, 'max')
     revalidatePath(`/memories/${postId}`)
     return { success: true }
   } catch (error: unknown) {
@@ -102,7 +113,10 @@ export async function checkLikeStatus(postId: string, sessionIdentifier: string)
 export async function deleteComment(commentId: string) {
   try {
     const postId = await removeComment(commentId)
+    revalidateTag('memories', 'max')
     if (postId) {
+      revalidateTag(`memory-${postId}`, 'max')
+      revalidateTag(`comments-${postId}`, 'max')
       revalidatePath(`/memories/${postId}`)
     }
     revalidatePath('/admin/comments')

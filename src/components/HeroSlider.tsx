@@ -79,8 +79,8 @@ export function HeroSlider({ memories }: { memories: Memory[] }) {
               fill
               className="object-cover object-center"
               sizes="100vw"
-              priority
-              unoptimized
+              priority={currentIndex === 0}
+              quality={85}
             />
             {/* Overlay gradient */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />

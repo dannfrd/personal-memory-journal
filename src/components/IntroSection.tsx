@@ -3,52 +3,35 @@
 import type { Memory } from "@/src/types";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
 
-export function IntroSection({ memories = [] }: { memories?: Memory[] }) {
-  const allImages = useMemo(
-    () =>
-      memories
-        .flatMap((m) => [
-          m.cover_image_url,
-          ...(m.post_images?.map((img) => img.image_url) || []),
-        ])
-        .filter(Boolean),
-    [memories]
-  );
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i += 1) {
+    hash = (hash * 31 + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
 
-  const [collageItems, setCollageItems] = useState<
-    { src: string; offset: number; rotate: number; scale: number }[]
-  >(() =>
-    allImages.slice(0, 15).map((src) => ({
-      src,
-      offset: 0,
-      rotate: 0,
-      scale: 1,
-    }))
-  );
+export const IntroSection = memo(function IntroSection({ memories = [] }: { memories?: Memory[] }) {
+  const collageItems = useMemo(() => {
+    const allImages = memories
+      .flatMap((m) => [
+        m.cover_image_url,
+        ...(m.post_images?.map((img) => img.image_url) || []),
+      ])
+      .filter(Boolean);
 
-  useEffect(() => {
-    if (allImages.length === 0) {
-      setCollageItems([]);
-      return;
-    }
-
-    const shuffled = [...allImages];
-    for (let i = shuffled.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-
-    const items = shuffled.slice(0, 15).map((src) => ({
-      src,
-      offset: Math.round(Math.random() * 20 - 10),
-      rotate: Math.round(Math.random() * 10 - 5),
-      scale: 0.98 + Math.random() * 0.1,
-    }));
-
-    setCollageItems(items);
-  }, [allImages]);
+    return allImages.slice(0, 12).map((src, idx) => {
+      const h = hashString(`${src}-${idx}`);
+      return {
+        src,
+        offset: (h % 21) - 10,
+        rotate: ((h >> 4) % 11) - 5,
+        scale: 0.98 + ((h % 10) / 100),
+      };
+    });
+  }, [memories]);
 
   return (
     <section className="relative flex flex-col items-center justify-center overflow-hidden bg-[#EAE5DF] px-8 py-32 text-center text-[#2B303A] sm:px-16 lg:py-48">
@@ -70,8 +53,10 @@ export function IntroSection({ memories = [] }: { memories?: Memory[] }) {
                   src={item.src}
                   alt="Collage Background"
                   fill
+                  sizes="(max-width: 768px) 45vw, 20vw"
+                  quality={60}
+                  loading="lazy"
                   className="object-cover saturate-110"
-                  unoptimized
                 />
               </div>
             ))}
@@ -104,4 +89,4 @@ export function IntroSection({ memories = [] }: { memories?: Memory[] }) {
       </div>
     </section>
   );
-}
+});

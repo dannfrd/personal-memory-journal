@@ -4,11 +4,15 @@ import { formatDate } from "@/src/lib/utils";
 import { Memory } from "@/src/types";
 import { motion } from "framer-motion";
 import { MessageCircle } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { MemoryDetailGallery } from "./MemoryDetailGallery";
-import { Comments } from "./social/Comments";
 import { LikeButton } from "./social/LikeButton";
+
+const Comments = dynamic(() => import("./social/Comments").then((m) => m.Comments), {
+  ssr: false,
+});
 
 const PALETTES = [
   { bg: "bg-[#EAE5DF]", text: "text-[#2B303A]", imgBg: "bg-[#D2CBC0]", bgHex: "#EAE5DF", textHex: "#2B303A" }, // Sand
@@ -18,7 +22,7 @@ const PALETTES = [
   { bg: "bg-[#1C1E1F]", text: "text-[#EAE5DF]", imgBg: "bg-[#0E0F10]", bgHex: "#1C1E1F", textHex: "#EAE5DF" }, // Deep Charcoal
 ];
 
-export function MemoryCard({ memory, index = 0 }: { memory: Memory; index?: number }) {
+export const MemoryCard = memo(function MemoryCard({ memory, index = 0 }: { memory: Memory; index?: number }) {
   const [showComments, setShowComments] = useState(false);
   
   const isEven = index % 2 === 0;
@@ -118,4 +122,4 @@ export function MemoryCard({ memory, index = 0 }: { memory: Memory; index?: numb
       </div>
     </section>
   );
-}
+});

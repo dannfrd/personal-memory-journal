@@ -4,13 +4,14 @@ import { NextResponse } from 'next/server';
 import { basename } from 'path';
 
 // Allowed MIME types
-const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/avif', 'image/gif'];
 
 function inferMimeTypeFromName(fileName: string | undefined) {
   const name = (fileName || '').toLowerCase();
   if (name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'image/jpeg';
   if (name.endsWith('.png')) return 'image/png';
   if (name.endsWith('.webp')) return 'image/webp';
+  if (name.endsWith('.avif')) return 'image/avif';
   if (name.endsWith('.gif')) return 'image/gif';
   return '';
 }

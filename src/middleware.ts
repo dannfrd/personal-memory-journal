@@ -1,32 +1,47 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Simpan IP dan jumlah request di memory (Catatan: di Edge server/Vercel ini tidak ter-share antar instance)
-// Untuk skala besar, disarankan menggunakan Redis (misal: @upstash/ratelimit)
-const rateLimitMap = new Map();
+// Bounded in-memory rate limit map to prevent unbounded RAM growth on 4 GB VPS (VPS-01, VPS-06)
+const MAX_TRACKED_IPS = 2000;
+const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
 
 export function middleware(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ?? request.headers.get('x-real-ip') ?? '127.0.0.1';
-  
-  const limit = 100; // Maksimal request per window
-  const windowMs = 60 * 1000; // 1 menit
+  const ip =
+    request.headers.get('cf-connecting-ip') ??
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    request.headers.get('x-real-ip') ??
+    '127.0.0.1';
 
-  if (!rateLimitMap.has(ip)) {
+  const limit = 120; // Max requests per 1-minute window
+  const windowMs = 60 * 1000;
+  const now = Date.now();
+
+  const ipData = rateLimitMap.get(ip);
+
+  if (!ipData) {
+    // Evict expired or oldest entries if map reaches capacity
+    if (rateLimitMap.size >= MAX_TRACKED_IPS) {
+      for (const [key, val] of rateLimitMap.entries()) {
+        if (now - val.lastReset > windowMs) {
+          rateLimitMap.delete(key);
+        }
+      }
+      if (rateLimitMap.size >= MAX_TRACKED_IPS) {
+        const oldestKey = rateLimitMap.keys().next().value;
+        if (oldestKey) rateLimitMap.delete(oldestKey);
+      }
+    }
     rateLimitMap.set(ip, {
       count: 1,
-      lastReset: Date.now(),
+      lastReset: now,
     });
   } else {
-    const ipData = rateLimitMap.get(ip);
-    
-    // Reset jika waktu window sudah lewat
-    if (Date.now() - ipData.lastReset > windowMs) {
+    if (now - ipData.lastReset > windowMs) {
       ipData.count = 1;
-      ipData.lastReset = Date.now();
+      ipData.lastReset = now;
     } else {
       ipData.count += 1;
-      
-      // Jika melebihi limit, block request
+
       if (ipData.count > limit) {
         return new NextResponse(
           JSON.stringify({ error: 'Too Many Requests - Terdeteksi aktivitas mencurigakan' }),
@@ -36,21 +51,11 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Tambahkan security headers ekstra ke response jika diperlukan
-  const response = NextResponse.next();
-  return response;
+  return NextResponse.next();
 }
 
-// Konfigurasi path mana saja yang ingin di-protect dengan middleware
 export const config = {
   matcher: [
-    /*
-     * Match semua request paths kecuali:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files (images dll di folder public)
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|mp3|ogg|m4a)$).*)',
   ],
 };
