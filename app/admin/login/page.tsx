@@ -25,15 +25,17 @@ export default async function LoginPage() {
         <div className="relative z-10 flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-3 text-white transition-opacity hover:opacity-80"
+            className="inline-flex items-center gap-3.5 text-white transition-opacity hover:opacity-85"
           >
-            <Image
-              src="/logo-lovelog.png"
-              alt="Lovelog"
-              width={160}
-              height={75}
-              className="h-9 w-auto brightness-0 invert"
-            />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F6F3EC] p-1.5 shadow-md">
+              <Image
+                src="/logo-lovelog.png"
+                alt="Lovelog"
+                width={120}
+                height={56}
+                className="h-full w-auto object-contain"
+              />
+            </div>
             <div className="flex flex-col">
               <span className="font-serif text-xl font-bold tracking-tight leading-none">
                 Lovelog

@@ -69,7 +69,7 @@ export function LoginForm() {
     try {
       const widgetId = window.turnstile.render(containerRef.current, {
         sitekey: siteKey,
-        theme: "auto",
+        theme: "light",
         size: "normal",
         callback: (token: string) => {
           console.log("[Turnstile] SUCCESS — token received");
@@ -213,7 +213,7 @@ export function LoginForm() {
 
         {/* Email Field */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-foreground/70">
+          <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-[#1F242D]/80">
             Email Admin
           </label>
           <input
@@ -224,13 +224,13 @@ export function LoginForm() {
             required
             disabled={loading}
             placeholder="admin@example.com"
-            className="w-full rounded-xl border border-black/10 bg-black/[0.02] px-3.5 py-2.5 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-all focus:border-foreground focus:bg-background focus:ring-2 focus:ring-foreground/10 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.03] dark:focus:border-white dark:focus:bg-background dark:focus:ring-white/10"
+            className="w-full rounded-xl border border-black/15 bg-[#F6F3EC]/70 px-3.5 py-2.5 text-sm font-medium text-[#1F242D] placeholder:text-[#1F242D]/40 outline-none transition-all focus:border-[#1F242D] focus:bg-white focus:ring-2 focus:ring-[#1F242D]/15 disabled:opacity-50"
           />
         </div>
 
         {/* Password Field */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-foreground/70">
+          <label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-[#1F242D]/80">
             Password
           </label>
           <div className="relative">
@@ -242,13 +242,13 @@ export function LoginForm() {
               required
               disabled={loading}
               placeholder="••••••••"
-              className="w-full rounded-xl border border-black/10 bg-black/[0.02] px-3.5 py-2.5 pr-10 text-sm text-foreground placeholder:text-foreground/40 outline-none transition-all focus:border-foreground focus:bg-background focus:ring-2 focus:ring-foreground/10 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.03] dark:focus:border-white dark:focus:bg-background dark:focus:ring-white/10"
+              className="w-full rounded-xl border border-black/15 bg-[#F6F3EC]/70 px-3.5 py-2.5 pr-10 text-sm font-medium text-[#1F242D] placeholder:text-[#1F242D]/40 outline-none transition-all focus:border-[#1F242D] focus:bg-white focus:ring-2 focus:ring-[#1F242D]/15 disabled:opacity-50"
             />
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
               tabIndex={-1}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-foreground/50 transition-colors hover:text-foreground focus:outline-none"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-[#1F242D]/55 transition-colors hover:text-[#1F242D] focus:outline-none"
               aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -313,7 +313,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={loading || !turnstileToken}
-          className="group relative mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-2.5 text-sm font-semibold text-background shadow-md transition-all hover:opacity-95 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
+          className="group relative mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#1F242D] px-4 py-3 text-sm font-semibold text-[#F6F3EC] shadow-md transition-all hover:bg-black active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-45"
         >
           {loading ? (
             <>
