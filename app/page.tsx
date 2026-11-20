@@ -2,7 +2,6 @@ import { EmptyState } from "@/src/components/EmptyState";
 import { HeroSlider } from "@/src/components/HeroSlider";
 import { IntroSection } from "@/src/components/IntroSection";
 import { MemoryIgGrid } from "@/src/components/MemoryIgGrid";
-import { MusicPlayer } from "@/src/components/MusicPlayer";
 import { Navbar } from "@/src/components/Navbar";
 import { fetchMemories } from "@/src/lib/vpsMemoryApi";
 import { BookOpen, Heart, Images, MapPin } from "lucide-react";
@@ -38,7 +37,6 @@ export default async function Home() {
   return (
     <div className="relative min-h-screen font-sans bg-[#F6F3EC] text-[#1F242D] selection:bg-[#1F242D] selection:text-[#F6F3EC]">
       <Navbar />
-      <MusicPlayer />
 
       <main className="w-full h-full m-0 p-0">
         {/* 1. Hero Showcase */}

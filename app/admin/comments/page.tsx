@@ -1,7 +1,7 @@
 import { AdminHeader } from "@/src/components/admin/AdminHeader";
 import { PageContainer } from "@/src/components/PageContainer";
 import { DeleteCommentButton } from "@/src/components/admin/DeleteCommentButton";
-import { formatDate } from "@/src/lib/utils";
+import { formatDate, getMemoryUrl } from "@/src/lib/utils";
 import {
   Calendar,
   CornerDownRight,
@@ -175,7 +175,7 @@ export default async function AdminCommentsPage() {
                           <td className="px-6 py-4">
                             {comment.memory ? (
                               <Link
-                                href={`/memories/${comment.memory.id}`}
+                                href={getMemoryUrl(comment.memory)}
                                 target="_blank"
                                 className="group/link inline-flex items-start gap-1.5 text-xs font-medium text-foreground/70 hover:text-foreground transition-colors"
                               >

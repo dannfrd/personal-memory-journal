@@ -1,10 +1,9 @@
 import { MemoryDetailGallery } from "@/src/components/MemoryDetailGallery";
-import { MusicPlayer } from "@/src/components/MusicPlayer";
 import { Navbar } from "@/src/components/Navbar";
 import { CommentModalButton } from "@/src/components/social/CommentModalButton";
 import { Comments } from "@/src/components/social/Comments";
 import { LikeButton } from "@/src/components/social/LikeButton";
-import { formatDate } from "@/src/lib/utils";
+import { formatDate, getMemoryUrl } from "@/src/lib/utils";
 import { fetchMemories, fetchMemoryById } from "@/src/lib/vpsMemoryApi";
 import type { Memory } from "@/src/types";
 import {
@@ -63,7 +62,6 @@ export default async function MemoryDetail({
   return (
     <div className="min-h-screen font-sans bg-[#F6F3EC] text-[#1F242D] selection:bg-[#1F242D] selection:text-[#F6F3EC]">
       <Navbar />
-      <MusicPlayer />
 
       <main className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-12 py-8 sm:py-12">
         {/* Top Breadcrumb & Chapter Navigation */}
@@ -177,7 +175,7 @@ export default async function MemoryDetail({
           >
             {prevMemory ? (
               <Link
-                href={`/memories/${prevMemory.id}`}
+                href={getMemoryUrl(prevMemory)}
                 className="group flex items-center gap-4 rounded-2xl border border-black/10 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
               >
                 <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-[#E5DEC9]">
@@ -209,7 +207,7 @@ export default async function MemoryDetail({
 
             {nextMemory ? (
               <Link
-                href={`/memories/${nextMemory.id}`}
+                href={getMemoryUrl(nextMemory)}
                 className="group flex items-center justify-end gap-4 rounded-2xl border border-black/10 bg-white p-4 text-right shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
               >
                 <div className="min-w-0 flex-1">

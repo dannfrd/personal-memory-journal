@@ -27,27 +27,35 @@ export const IntroSection = memo(function IntroSection({
       ])
       .filter(Boolean);
 
-    return allImages.slice(0, 10).map((src, idx) => {
+    if (allImages.length === 0) return [];
+
+    // Repeat images if fewer than 15 so the full 15-tile background collage is always lush and filled
+    const filledImages: string[] = [];
+    while (filledImages.length < 15) {
+      filledImages.push(...allImages);
+    }
+
+    return filledImages.slice(0, 15).map((src, idx) => {
       const h = hashString(`${src}-${idx}`);
       return {
         src,
         offset: (h % 21) - 10,
-        rotate: ((h >> 4) % 9) - 4,
-        scale: 0.98 + (h % 8) / 100,
+        rotate: ((h >> 4) % 11) - 5,
+        scale: 0.98 + (h % 10) / 100,
       };
     });
   }, [memories]);
 
   return (
-    <section className="relative flex flex-col items-center justify-center overflow-hidden bg-[#F6F3EC] px-6 py-24 text-center text-[#1F242D] sm:px-16 lg:py-36 border-b border-black/10">
-      {/* Subtle Background Collage */}
+    <section className="relative flex flex-col items-center justify-center overflow-hidden bg-[#EAE5DF] px-6 py-32 text-center text-[#1F242D] sm:px-16 lg:py-48 border-b border-black/10">
+      {/* --- Background Collage (Transparent Polaroid Grid Behind Manifesto Text) --- */}
       {collageItems.length > 0 && (
-        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none opacity-[0.18]">
-          <div className="grid h-full w-full grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-5 p-6 transform scale-105">
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none opacity-[0.34]">
+          <div className="grid h-full w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 p-4 transform scale-110 rotate-[-1.5deg]">
             {collageItems.map((item, i) => (
               <div
                 key={`${item.src}-${i}`}
-                className={`relative aspect-[3/4] w-full overflow-hidden rounded-2xl shadow-md border-4 border-white ${
+                className={`relative aspect-[3/4] w-full overflow-hidden rounded-xl shadow-lg border-2 border-white/60 ${
                   i % 3 === 0 ? "hidden md:block" : ""
                 }`}
                 style={{
@@ -58,27 +66,27 @@ export const IntroSection = memo(function IntroSection({
                   src={item.src}
                   alt="Collage Background"
                   fill
-                  sizes="(max-width: 768px) 45vw, 20vw"
-                  quality={55}
+                  sizes="(max-width: 768px) 45vw, 22vw"
+                  quality={65}
                   loading="lazy"
                   className="object-cover saturate-110"
                 />
               </div>
             ))}
           </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-[#F6F3EC] via-[#F6F3EC]/60 to-[#F6F3EC]" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#F6F3EC] via-transparent to-[#F6F3EC]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#F6F3EC] via-[#EAE5DF]/25 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#EAE5DF]/70 via-transparent to-[#F6F3EC]" />
         </div>
       )}
 
-      {/* Editorial Manifesto Card */}
+      {/* --- Main Content --- */}
       <div className="relative z-10 max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-10%" }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="inline-flex items-center gap-2 rounded-full border border-[#1F242D]/15 bg-white/80 backdrop-blur-md px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.28em] text-[#1F242D]/75 shadow-sm mb-8"
+          className="inline-flex items-center gap-2 rounded-full border border-[#1F242D]/15 bg-white/85 backdrop-blur-md px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.28em] text-[#1F242D]/80 shadow-sm mb-8"
         >
           <Sparkles className="h-3 w-3 text-amber-700" aria-hidden="true" />
           <span>The Editorial Manifesto</span>
@@ -89,7 +97,7 @@ export const IntroSection = memo(function IntroSection({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-10%" }}
           transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
-          className="mb-6 font-serif text-4xl font-medium leading-[1.12] tracking-tight sm:text-6xl lg:text-7xl text-[#1F242D]"
+          className="mb-6 font-serif text-4xl font-medium leading-[1.12] tracking-tight sm:text-6xl lg:text-7xl text-[#1F242D] drop-shadow-sm"
         >
           Ruang hening untuk merangkai dan menghidupkan kembali{" "}
           <span className="italic font-normal text-amber-900">
@@ -102,10 +110,10 @@ export const IntroSection = memo(function IntroSection({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-10%" }}
           transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
-          className="mx-auto max-w-2xl text-base sm:text-lg font-normal leading-relaxed text-[#1F242D]/75"
+          className="mx-auto max-w-2xl text-base sm:text-xl font-medium leading-relaxed text-[#1F242D]/80"
         >
           Setiap momen diabadikan dengan sepenuh hati dalam lembaran waktu.
-          Jelajahi kembali jejak perjalanan, tempat, dan cerita yang pernah kita lalui bersama.
+          Selamat datang di galeri kenangan ini.
         </motion.p>
       </div>
     </section>

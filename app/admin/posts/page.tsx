@@ -14,7 +14,7 @@ import {
 import { AdminHeader } from "@/src/components/admin/AdminHeader";
 import { PageContainer } from "@/src/components/PageContainer";
 import { DeleteMemoryButton } from "@/src/components/admin/DeleteMemoryButton";
-import { formatDate } from "@/src/lib/utils";
+import { formatDate, getMemoryUrl } from "@/src/lib/utils";
 import { fetchMemories } from "@/src/lib/vpsMemoryApi";
 import type { Memory } from "@/src/types";
 
@@ -243,7 +243,7 @@ export default async function AdminPostsPage() {
                           <td className="px-6 py-4 text-right whitespace-nowrap">
                             <div className="flex items-center justify-end gap-1.5">
                               <Link
-                                href={`/memories/${post.id}`}
+                                href={getMemoryUrl(post)}
                                 target="_blank"
                                 className="flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-foreground/55 transition-colors hover:border-black/10 hover:bg-black/5 hover:text-foreground dark:hover:bg-white/5"
                                 title="Lihat halaman publik"

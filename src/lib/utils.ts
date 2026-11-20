@@ -16,3 +16,42 @@ export function formatDate(dateInput: string | number | Date | null | undefined)
     return String(dateInput);
   }
 }
+
+export function slugifyText(text: string): string {
+  return text
+    .toString()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 7)
+    .join("-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+export function getMemorySlug(memory: {
+  id: string;
+  title?: string | null;
+  description?: string | null;
+  location?: string | null;
+}): string {
+  const baseText =
+    memory.title?.trim() ||
+    memory.location?.trim() ||
+    memory.description?.trim() ||
+    "memori";
+  const slug = slugifyText(baseText);
+  return slug || memory.id;
+}
+
+export function getMemoryUrl(memory: {
+  id: string;
+  title?: string | null;
+  description?: string | null;
+  location?: string | null;
+}): string {
+  return `/memories/${encodeURIComponent(getMemorySlug(memory))}`;
+}

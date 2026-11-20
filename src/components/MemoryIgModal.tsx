@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDate } from "@/src/lib/utils";
+import { formatDate, getMemoryUrl } from "@/src/lib/utils";
 import { Memory } from "@/src/types";
 import { ChevronLeft, ChevronRight, MapPin, MessageCircle, X } from "lucide-react";
 import Image from "next/image";
@@ -286,7 +286,7 @@ export function MemoryIgModal({
             />
 
             <Link
-              href={`/memories/${memory.id}`}
+              href={getMemoryUrl(memory)}
               className="flex-1 text-center py-3 px-4 bg-[#2B303A] hover:bg-[#1F242D] text-[#FAF8F5] rounded-full transition-colors text-xs font-bold uppercase tracking-[0.18em] shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2B303A]"
             >
               Buka Halaman Penuh

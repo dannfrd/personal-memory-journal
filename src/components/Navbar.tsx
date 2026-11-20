@@ -4,6 +4,7 @@ import { Lock, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { MusicPlayer } from "./MusicPlayer";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -77,31 +78,34 @@ export function Navbar() {
             </Link>
           </nav>
 
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Integrated Navbar Audio Player (Zero bottom screen obstruction!) */}
+            <MusicPlayer />
+
             <Link
               href="/admin/posts"
-              className="inline-flex items-center gap-2 rounded-full border border-black/15 bg-white/60 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#1F242D]/80 transition-all hover:bg-[#1F242D] hover:text-[#F6F3EC] hover:border-[#1F242D]"
+              className="hidden sm:inline-flex items-center gap-2 rounded-full border border-black/15 bg-white/60 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#1F242D]/80 transition-all hover:bg-[#1F242D] hover:text-[#F6F3EC] hover:border-[#1F242D]"
             >
               <Lock className="h-3 w-3" aria-hidden="true" />
               <span>Curator</span>
             </Link>
-          </div>
 
-          {/* Mobile Hamburger Button */}
-          <button
-            type="button"
-            onClick={() => setIsMenuOpen((prev) => !prev)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#1F242D] transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F242D] sm:hidden"
-            aria-label={isMenuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
-            aria-expanded={isMenuOpen}
-            aria-controls="mobile-nav"
-          >
-            {isMenuOpen ? (
-              <X className="h-5 w-5" aria-hidden="true" />
-            ) : (
-              <Menu className="h-5 w-5" aria-hidden="true" />
-            )}
-          </button>
+            {/* Mobile Hamburger Button */}
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#1F242D] transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1F242D] sm:hidden"
+              aria-label={isMenuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-nav"
+            >
+              {isMenuOpen ? (
+                <X className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                <Menu className="h-5 w-5" aria-hidden="true" />
+              )}
+            </button>
+          </div>
 
           {isMenuOpen && (
             <nav

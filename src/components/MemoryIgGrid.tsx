@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDate } from "@/src/lib/utils";
+import { formatDate, getMemoryUrl } from "@/src/lib/utils";
 import { Memory } from "@/src/types";
 import {
   ArrowUpRight,
@@ -145,7 +145,7 @@ const MemoryEditorialCard = memo(function MemoryEditorialCard({
           </div>
 
           <Link
-            href={`/memories/${memory.id}`}
+            href={getMemoryUrl(memory)}
             className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.18em] text-[#1F242D] hover:text-amber-900 transition-colors"
           >
             <span>Baca Cerita</span>

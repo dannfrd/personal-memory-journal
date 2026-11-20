@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDate } from "@/src/lib/utils";
+import { formatDate, getMemoryUrl } from "@/src/lib/utils";
 import { Memory } from "@/src/types";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
@@ -135,7 +135,7 @@ export function HeroSlider({ memories }: { memories: Memory[] }) {
                 {/* Direct CTA to Story */}
                 <div className="mt-5 sm:mt-6 flex items-center gap-4">
                   <Link
-                    href={`/memories/${memory.id}`}
+                    href={getMemoryUrl(memory)}
                     className="group inline-flex items-center gap-2.5 rounded-full bg-white px-5 py-2.5 sm:px-6 sm:py-3 text-[11px] font-bold uppercase tracking-[0.2em] text-[#121417] shadow-lg transition-all hover:bg-[#F6F3EC] hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                   >
                     <span>Baca Kisah Ini</span>

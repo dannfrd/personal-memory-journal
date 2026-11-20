@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDate } from "@/src/lib/utils";
+import { formatDate, getMemoryUrl } from "@/src/lib/utils";
 import { Memory } from "@/src/types";
 import { motion } from "framer-motion";
 import { MessageCircle } from "lucide-react";
@@ -51,7 +51,7 @@ export const MemoryCard = memo(function MemoryCard({ memory, index = 0 }: { memo
             <span>{formatDate(memory.memory_date)}</span>
           </div>
 
-          <Link href={`/memories/${memory.id}`} className="group block focus:outline-none">
+          <Link href={getMemoryUrl(memory)} className="group block focus:outline-none">
             {memory.title && (
               <h3 className="mb-4 font-serif text-3xl tracking-tight opacity-80 transition-opacity group-hover:opacity-100">
                 {memory.title}
@@ -93,7 +93,7 @@ export const MemoryCard = memo(function MemoryCard({ memory, index = 0 }: { memo
           </div>
           
           <Link 
-            href={`/memories/${memory.id}`} 
+            href={getMemoryUrl(memory)} 
             className="inline-flex items-center gap-4 border border-current rounded-full px-8 py-4 text-sm font-bold uppercase tracking-[0.2em] transition-all hover:bg-(--btn-hover-bg) hover:text-(--btn-hover-text) hover:border-(--btn-hover-bg)"
           >
             View Collection

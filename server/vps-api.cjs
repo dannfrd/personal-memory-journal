@@ -154,6 +154,31 @@ function toIsoDate(value) {
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
+function slugifyText(text) {
+  return String(text || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 7)
+    .join("-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function getMemorySlug(raw) {
+  const base =
+    (raw.title && String(raw.title).trim()) ||
+    (raw.location && String(raw.location).trim()) ||
+    (raw.description && String(raw.description).trim()) ||
+    "memori";
+  return slugifyText(base) || raw.id;
+}
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 function sanitizeFileName(value) {
   const input = typeof value === "string" ? value : "";
   return path.basename(input).replace(/[^a-zA-Z0-9.\-_]/g, "");
@@ -493,31 +518,59 @@ const server = createServer(async (req, res) => {
 
     const memoryId = parseId(pathname, "/memories/");
     if (req.method === "GET" && memoryId && !pathname.includes("/likes") && !pathname.includes("/comments")) {
-      const cacheKey = `memories:detail:${memoryId}`;
+      const normalizedParam = memoryId.toLowerCase();
+      const cacheKey = `memories:detail:${normalizedParam}`;
       const cached = getCached(cacheKey);
       if (cached) {
         sendJson(req, res, 200, cached, "public, max-age=15, stale-while-revalidate=60");
         return;
       }
 
-      const memory = await prisma.memory.findUnique({
-        where: { id: memoryId },
-        select: {
-          id: true,
-          title: true,
-          cover_image_url: true,
-          hero_image_url: true,
-          frame_style: true,
-          description: true,
-          memory_date: true,
-          location: true,
-          mood: true,
-          createdAt: true,
-          updatedAt: true,
-          images: { select: { imageUrl: true }, orderBy: { sortOrder: "asc" } },
-          _count: { select: { likes: true, comments: true } },
-        },
-      });
+      const memorySelect = {
+        id: true,
+        title: true,
+        cover_image_url: true,
+        hero_image_url: true,
+        frame_style: true,
+        description: true,
+        memory_date: true,
+        location: true,
+        mood: true,
+        createdAt: true,
+        updatedAt: true,
+        images: { select: { imageUrl: true }, orderBy: { sortOrder: "asc" } },
+        _count: { select: { likes: true, comments: true } },
+      };
+
+      let memory = null;
+
+      // 1. Direct UUID lookup if param is a valid UUID
+      if (UUID_REGEX.test(memoryId)) {
+        memory = await prisma.memory.findUnique({
+          where: { id: memoryId },
+          select: memorySelect,
+        });
+      }
+
+      // 2. Human-readable slug lookup (e.g. /memories/senja-di-pantai or /memories/senja-di-pantai-8ec54e65)
+      if (!memory) {
+        const allMemories = await prisma.memory.findMany({
+          orderBy: { memory_date: "desc" },
+          select: memorySelect,
+        });
+
+        memory =
+          allMemories.find((m) => {
+            const slug = getMemorySlug(m);
+            const shortId = String(m.id).slice(0, 8).toLowerCase();
+            return (
+              slug === normalizedParam ||
+              `${slug}-${shortId}` === normalizedParam ||
+              String(m.id).toLowerCase() === normalizedParam ||
+              String(m.id).toLowerCase().startsWith(normalizedParam)
+            );
+          }) || null;
+      }
 
       if (!memory) {
         sendJson(req, res, 404, { error: "Memory not found" });
@@ -526,6 +579,8 @@ const server = createServer(async (req, res) => {
 
       const mapped = mapMemory(memory);
       setCached(cacheKey, mapped);
+      setCached(`memories:detail:${memory.id}`, mapped);
+      setCached(`memories:detail:${getMemorySlug(memory)}`, mapped);
       sendJson(req, res, 200, mapped, "public, max-age=15, stale-while-revalidate=60");
       return;
     }
@@ -598,14 +653,14 @@ const server = createServer(async (req, res) => {
           : []),
       ]);
 
-      invalidateCache(`memories:detail:${memoryId}`);
+      invalidateCache("memories:detail:");
       sendJson(req, res, 200, { id: memoryId });
       return;
     }
 
     if (req.method === "DELETE" && memoryId && !pathname.includes("/likes") && !pathname.includes("/comments")) {
       await prisma.memory.delete({ where: { id: memoryId }, select: { id: true } });
-      invalidateCache(`memories:detail:${memoryId}`);
+      invalidateCache("memories:detail:");
       res.writeHead(204, {
         "Access-Control-Allow-Origin": "*",
       });
@@ -630,7 +685,7 @@ const server = createServer(async (req, res) => {
         }
       }
 
-      invalidateCache(`memories:detail:${postId}`);
+      invalidateCache("memories:detail:");
       sendJson(req, res, 200, { success: true });
       return;
     }
@@ -655,7 +710,7 @@ const server = createServer(async (req, res) => {
         }
       }
 
-      invalidateCache(`memories:detail:${postId}`);
+      invalidateCache("memories:detail:");
       sendJson(req, res, 200, { success: true });
       return;
     }
@@ -736,7 +791,7 @@ const server = createServer(async (req, res) => {
       });
 
       invalidateCache(`comments:post:${postId}`);
-      invalidateCache(`memories:detail:${postId}`);
+      invalidateCache("memories:detail:");
       invalidateCache("admin:comments");
       sendJson(req, res, 201, mapComment(created));
       return;
@@ -757,7 +812,7 @@ const server = createServer(async (req, res) => {
 
       await prisma.comment.delete({ where: { id: commentId }, select: { id: true } });
       invalidateCache(`comments:post:${existing.postId}`);
-      invalidateCache(`memories:detail:${existing.postId}`);
+      invalidateCache("memories:detail:");
       invalidateCache("admin:comments");
       sendJson(req, res, 200, { postId: existing.postId });
       return;
