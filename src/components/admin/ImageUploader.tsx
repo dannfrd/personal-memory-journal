@@ -308,8 +308,9 @@ export function ImageUploader({
             </p>
             <p className="text-xs opacity-50">PNG, JPG/JPEG, GIF, atau HEIC (max. 25MB)</p>
             {isHeroMode && (
-              <p className="mt-2 text-xs font-semibold text-rose-500/80">
-                ✂️ Crop 16:9 otomatis terbuka — pastikan area yang dipilih terlihat bagus di layar penuh
+              <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400">
+                <CropIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>Crop 16:9 otomatis terbuka — pastikan area yang dipilih terlihat proporsional di layar penuh</span>
               </p>
             )}
           </div>

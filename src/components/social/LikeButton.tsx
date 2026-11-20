@@ -42,14 +42,16 @@ export function LikeButton({ postId, initialCount = 0 }: { postId: string, initi
 
   return (
     <button 
+      type="button"
       onClick={handleLike}
-      className={`group flex items-center gap-3 rounded-full border px-6 py-3 text-xs font-bold tracking-[0.2em] uppercase transition-all
+      aria-pressed={hasLiked}
+      className={`group flex min-h-[44px] items-center gap-3 rounded-full border px-5 py-2.5 text-xs font-bold tracking-[0.2em] uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current
         ${hasLiked 
-          ? "border-red-500 bg-red-50 text-red-600 dark:bg-red-500/10" 
-          : "border-current opacity-60 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/5"
+          ? "border-rose-700 bg-rose-700 text-white" 
+          : "border-current/35 text-current/80 hover:border-current hover:text-current hover:bg-black/5 dark:hover:bg-white/5"
         }`}
     >
-      <Heart className={`h-4 w-4 transition-transform group-hover:scale-110 ${hasLiked ? "fill-current" : ""}`} />
+      <Heart aria-hidden="true" className={`h-4 w-4 transition-transform group-hover:scale-110 ${hasLiked ? "fill-current" : ""}`} />
       <span>{likes} {likes === 1 ? 'Like' : 'Likes'}</span>
     </button>
   );

@@ -217,39 +217,51 @@ export function Comments({ postId }: { postId: string }) {
       {/* Main Comment Form */}
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-6 pt-10 border-t border-current border-opacity-10"
+        className="flex flex-col gap-5 pt-8 border-t border-current/15"
       >
-        <h4 className="text-xs font-bold uppercase tracking-[0.2em] opacity-60 mb-2">
-          Leave a new reflection
+        <h4 className="text-xs font-bold uppercase tracking-[0.2em] opacity-75">
+          Tulis Refleksi Baru
         </h4>
-        <input
-          type="text"
-          placeholder="Your Name / Initial"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-          maxLength={50}
-          className="w-full border-b border-current border-opacity-20 bg-transparent py-3 text-sm font-medium focus:border-opacity-100 focus:outline-none transition-colors"
-        />
-        <textarea
-          placeholder="Your quiet thoughts..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          required
-          rows={3}
-          className="w-full border-b border-current border-opacity-20 bg-transparent py-3 text-sm font-medium focus:border-opacity-100 focus:outline-none transition-colors resize-none"
-        />
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor={`comment-name-${postId}`} className="text-[11px] font-semibold uppercase tracking-[0.18em] opacity-70">
+            Nama / Inisial
+          </label>
+          <input
+            id={`comment-name-${postId}`}
+            type="text"
+            placeholder="Masukkan nama atau inisial Anda"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            maxLength={50}
+            className="w-full border-b border-current/25 bg-transparent py-2.5 text-sm font-medium focus:border-current focus:outline-none transition-colors"
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor={`comment-content-${postId}`} className="text-[11px] font-semibold uppercase tracking-[0.18em] opacity-70">
+            Pesan / Refleksi
+          </label>
+          <textarea
+            id={`comment-content-${postId}`}
+            placeholder="Tuliskan kesan atau kenangan Anda..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            required
+            rows={3}
+            className="w-full border-b border-current/25 bg-transparent py-2.5 text-sm font-medium focus:border-current focus:outline-none transition-colors resize-none"
+          />
+        </div>
         {error && (
-          <p className="text-xs text-red-500 font-medium">{error}</p>
+          <p className="text-xs text-red-600 font-medium" role="alert">{error}</p>
         )}
         <button type="submit" disabled={submitting} className={btnLargeClass}>
           {submitting ? (
             <span className="flex items-center gap-2">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              Posting...
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+              Mengirim...
             </span>
           ) : (
-            "Post Reflection"
+            "Kirim Refleksi"
           )}
         </button>
       </form>

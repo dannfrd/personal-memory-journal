@@ -154,50 +154,50 @@ export function MusicPlayer({
           </button>
         </div>
       )}
-      <div className="flex w-[320px] max-w-[90vw] items-center gap-3 rounded-full border border-black/10 bg-white/80 px-4 py-2 shadow-lg backdrop-blur-md">
+      <div className="flex w-[320px] max-w-[90vw] items-center gap-2.5 rounded-full border border-black/10 bg-[#FAF8F5]/90 px-3.5 py-2 shadow-lg backdrop-blur-md">
         <button
           type="button"
           onClick={togglePlayback}
-          aria-label={isPlaying ? "Pause background music" : "Play background music"}
+          aria-label={isPlaying ? "Jeda musik latar" : "Putar musik latar"}
           disabled={!currentTrack}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2B303A] text-white transition-transform hover:scale-105 disabled:opacity-50"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2B303A] text-[#FAF8F5] transition-colors hover:bg-[#1F242D] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2B303A]"
         >
-          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          {isPlaying ? <Pause className="h-4 w-4" aria-hidden="true" /> : <Play className="h-4 w-4" aria-hidden="true" />}
         </button>
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={handlePrev}
-            aria-label="Previous track"
+            aria-label="Lagu sebelumnya"
             disabled={!hasMultipleTracks}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#2B303A] transition-transform hover:scale-105 disabled:opacity-40"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white/80 text-[#2B303A] transition-colors hover:bg-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2B303A]"
           >
-            <SkipBack className="h-4 w-4" />
+            <SkipBack className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
           <button
             type="button"
             onClick={handleNext}
-            aria-label="Next track"
+            aria-label="Lagu berikutnya"
             disabled={!hasMultipleTracks}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#2B303A] transition-transform hover:scale-105 disabled:opacity-40"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white/80 text-[#2B303A] transition-colors hover:bg-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2B303A]"
           >
-            <SkipForward className="h-4 w-4" />
+            <SkipForward className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         </div>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className="text-[10px] uppercase tracking-[0.3em] opacity-60">Now Playing</span>
-          <span className="truncate text-xs font-semibold">
+        <div className="flex min-w-0 flex-1 flex-col px-1">
+          <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-[#2B303A]/65">Audio Journal</span>
+          <span className="truncate text-xs font-semibold text-[#1F242D]">
             {currentTrack?.title ?? resolvedTitle ?? "Untitled"}
           </span>
         </div>
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
-          aria-label={isOpen ? "Collapse player" : "Expand player"}
+          aria-label={isOpen ? "Tutup pengatur volume" : "Buka pengatur volume"}
           aria-expanded={isOpen}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white/70 text-[#2B303A] transition-transform hover:scale-105"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white/80 text-[#2B303A] transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2B303A]"
         >
-          {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+          {isOpen ? <ChevronDown className="h-4 w-4" aria-hidden="true" /> : <ChevronUp className="h-4 w-4" aria-hidden="true" />}
         </button>
       </div>
       {isOpen && (

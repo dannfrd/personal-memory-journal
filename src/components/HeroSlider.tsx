@@ -56,6 +56,10 @@ export function HeroSlider({ memories }: { memories: Memory[] }) {
       className="relative w-full bg-[#1C1E1F]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
+      onFocusCapture={() => setIsPaused(true)}
+      onBlurCapture={() => setIsPaused(false)}
+      aria-roledescription="carousel"
+      aria-label="Sorotan Memori"
     >
       {/* Slide Container */}
       <div className="relative h-[52svh] min-h-[280px] max-h-[520px] sm:h-[85vh]">
@@ -83,67 +87,75 @@ export function HeroSlider({ memories }: { memories: Memory[] }) {
               quality={85}
             />
             {/* Overlay gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/10" />
 
             {/* Caption */}
             {(memory.title || memory.location) && (
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-                className="absolute bottom-10 left-6 sm:left-12 text-white drop-shadow-lg"
+                transition={{ delay: 0.25, duration: 0.45 }}
+                className="absolute bottom-14 left-6 right-6 sm:bottom-16 sm:left-12 sm:right-12 max-w-3xl text-white drop-shadow-md"
               >
-                {memory.title && (
-                  <p className="text-xl sm:text-3xl font-semibold tracking-tight">
-                    {memory.title}
-                  </p>
-                )}
                 {memory.location && (
-                  <p className="text-xs sm:text-sm opacity-80 mt-1 tracking-widest uppercase">
+                  <p className="text-[11px] sm:text-xs font-semibold opacity-85 mb-2 tracking-[0.28em] uppercase">
                     {memory.location}
                   </p>
+                )}
+                {memory.title && (
+                  <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-medium tracking-tight leading-tight">
+                    {memory.title}
+                  </h2>
                 )}
               </motion.div>
             )}
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation arrows — only show if more than 1 slide */}
+        {/* Navigation arrows — minimum 44x44px touch targets & keyboard focus ring */}
         {memories.length > 1 && (
           <>
             <button
+              type="button"
               onClick={() => paginate(-1)}
-              aria-label="Previous slide"
-              className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-10 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm border border-white/20 transition-all hover:bg-white/30 hover:scale-110 active:scale-95"
+              aria-label="Slide sebelumnya"
+              className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-md border border-white/25 transition-all hover:bg-black/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-5 w-5" aria-hidden="true" />
             </button>
             <button
+              type="button"
               onClick={() => paginate(1)}
-              aria-label="Next slide"
-              className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-10 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm border border-white/20 transition-all hover:bg-white/30 hover:scale-110 active:scale-95"
+              aria-label="Slide berikutnya"
+              className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-md border border-white/25 transition-all hover:bg-black/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-5 w-5" aria-hidden="true" />
             </button>
           </>
         )}
 
-        {/* Dot indicators */}
+        {/* Dot indicators — wrapped in 32x32px hit area for mobile ergonomics */}
         {memories.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1">
             {memories.map((_, i) => (
               <button
                 key={i}
-                aria-label={`Go to slide ${i + 1}`}
+                type="button"
+                aria-label={`Ke slide ${i + 1}`}
+                aria-current={i === currentIndex ? "true" : undefined}
                 onClick={() =>
                   setPage(([prev]) => [i, i > prev ? 1 : -1])
                 }
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i === currentIndex
-                    ? "w-6 bg-white"
-                    : "w-1.5 bg-white/40 hover:bg-white/70"
-                }`}
-              />
+                className="flex h-8 w-8 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                <span
+                  className={`block h-1.5 rounded-full transition-all duration-300 ${
+                    i === currentIndex
+                      ? "w-6 bg-white"
+                      : "w-1.5 bg-white/45 hover:bg-white/75"
+                  }`}
+                />
+              </button>
             ))}
           </div>
         )}

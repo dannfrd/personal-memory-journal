@@ -5,17 +5,18 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans), "Inter", sans-serif;
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-cormorant-serif), Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
 :root {
-  --background: #FAFAFA; /* warm white */
-  --foreground: #1F2937; /* charcoal */
+  --background: #FAF8F5; /* warm editorial ivory */
+  --foreground: #1F242D; /* deep ink charcoal */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #111827; /* dark charcoal */
-    --foreground: #F9FAFB; /* soft off-white */
+    --background: #121417; /* refined dark ink */
+    --foreground: #F4F1EA; /* warm parchment white */
   }
 }
 
@@ -29,4 +30,18 @@ body {
 
 html {
   scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

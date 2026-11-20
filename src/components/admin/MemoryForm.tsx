@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { saveMemory } from "@/app/actions/memories";
-import { Loader2 } from "lucide-react";
+import { Images, Loader2, Sparkles } from "lucide-react";
 import { ImageUploader } from "./ImageUploader";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -111,10 +111,11 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
       <div className="rounded-xl border border-rose-200/60 bg-rose-50/40 p-6 shadow-sm dark:border-rose-800/30 dark:bg-rose-950/20">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400">
-              📸 Cover / Hero Slider (Wajib)
+            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-rose-600 dark:text-rose-400">
+              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Cover &amp; Hero Slider (Wajib)</span>
             </h3>
-            <p className="mt-1 text-xs opacity-50">
+            <p className="mt-1 text-xs opacity-60">
               Versi crop 16:9 — akan tampil di hero slider halaman utama dan sampul galeri. Wajib diisi (maks. 1 foto).
             </p>
           </div>
@@ -137,10 +138,11 @@ export function MemoryForm({ initialData = null }: { initialData?: any }) {
       <div className="rounded-xl border border-black/10 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-900/50">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-widest opacity-50">
-              🖼️ Foto-foto Detail Galeri
+            <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-70">
+              <Images className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Foto-foto Detail Galeri</span>
             </h3>
-            <p className="mt-1 text-xs opacity-40">
+            <p className="mt-1 text-xs opacity-50">
               Foto-foto tambahan yang akan bisa di-swipe di halaman detail. Bisa banyak foto sekaligus.
             </p>
           </div>

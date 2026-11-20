@@ -34,51 +34,52 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => setIsMenuOpen((prev) => !prev)}
-            className="inline-flex items-center justify-center rounded-full bg-black/5 p-2.5 text-[#2B303A] transition-colors hover:bg-black/10 sm:hidden"
-            aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-black/5 text-[#2B303A] transition-colors hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2B303A] sm:hidden"
+            aria-label={isMenuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
             aria-expanded={isMenuOpen}
             aria-controls="mobile-nav"
           >
-            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {isMenuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
           </button>
 
-          <nav className="hidden items-center gap-1 rounded-full bg-white/60 p-1 text-xs font-bold tracking-[0.2em] uppercase text-[#2B303A] shadow-sm backdrop-blur-md sm:flex border border-white/50">
-            <Link href="/#home" className="rounded-full px-5 py-2.5 transition-colors hover:bg-white/80">
+          <nav aria-label="Primary Navigation" className="hidden items-center gap-1 rounded-full bg-white/75 p-1 text-xs font-bold tracking-[0.2em] uppercase text-[#2B303A] shadow-sm backdrop-blur-md sm:flex border border-black/5">
+            <Link href="/#home" className="rounded-full px-5 py-2.5 transition-colors hover:bg-[#2B303A] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2B303A]">
               Home
             </Link>
-            <Link href="/#gallery" className="rounded-full px-5 py-2.5 transition-colors hover:bg-white/80">
-              Gallery
-            </Link>
-            <Link href="/#journal" className="rounded-full px-5 py-2.5 transition-colors hover:bg-white/80">
+            <Link href="/#journal" className="rounded-full px-5 py-2.5 transition-colors hover:bg-[#2B303A] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2B303A]">
               Journal
+            </Link>
+            <Link href="/#gallery" className="rounded-full px-5 py-2.5 transition-colors hover:bg-[#2B303A] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2B303A]">
+              Gallery
             </Link>
           </nav>
 
           {isMenuOpen && (
             <nav
               id="mobile-nav"
-              className="absolute left-4 right-4 top-full mt-2 flex flex-col rounded-2xl bg-white p-2 text-xs font-bold uppercase tracking-[0.2em] text-[#2B303A] shadow-xl border border-black/5 sm:hidden"
+              aria-label="Mobile Navigation"
+              className="absolute left-4 right-4 top-full mt-2 flex flex-col gap-1 rounded-2xl bg-[#FAF8F5] p-2.5 text-xs font-bold uppercase tracking-[0.2em] text-[#2B303A] shadow-xl border border-black/10 sm:hidden"
             >
             <Link
               href="/#home"
-              className="rounded-xl px-4 py-3 transition-colors hover:bg-black/5"
+              className="rounded-xl px-4 py-3.5 transition-colors hover:bg-black/5"
               onClick={() => setIsMenuOpen(false)}
             >
               Home
             </Link>
             <Link
-              href="/#gallery"
-              className="rounded-xl px-4 py-3 transition-colors hover:bg-black/5"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Gallery
-            </Link>
-            <Link
               href="/#journal"
-              className="rounded-xl px-4 py-3 transition-colors hover:bg-black/5"
+              className="rounded-xl px-4 py-3.5 transition-colors hover:bg-black/5"
               onClick={() => setIsMenuOpen(false)}
             >
               Journal
+            </Link>
+            <Link
+              href="/#gallery"
+              className="rounded-xl px-4 py-3.5 transition-colors hover:bg-black/5"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Gallery
             </Link>
           </nav>
         )}

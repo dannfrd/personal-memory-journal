@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Cormorant_Garamond, Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -15,9 +15,17 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+const cormorantSerif = Cormorant_Garamond({
+  variable: "--font-cormorant-serif",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Memory Journal",
-  description: "A quiet space for personal reflections.",
+  title: "Lovelog — Personal Memory Journal",
+  description: "Ruang hening untuk merangkai dan menghidupkan kembali kepingan memori terindah kita.",
 };
 
 export default function RootLayout({
@@ -27,8 +35,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="id"
+      className={`${geistSans.variable} ${geistMono.variable} ${cormorantSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}

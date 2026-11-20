@@ -28,39 +28,39 @@ export default async function Home() {
       <MusicPlayer />
       
       <main className="w-full h-full m-0 p-0">
-        <div id="home">
+        <div id="home" className="scroll-mt-16">
           {featuredMemories.length > 0 && <HeroSlider memories={featuredMemories} />}
         </div>
-        <div id="journal">
+        <div id="journal" className="scroll-mt-16">
           <IntroSection memories={memories} />
         </div>
 
         {error && (
           <div className="py-20 px-8 max-w-5xl mx-auto min-h-[50vh]">
-            <div className="rounded-lg bg-red-50 p-4 text-red-800 border border-red-200 shadow-sm">
-              <p className="font-medium mb-1">Failed to load memories:</p>
-              <pre className="text-xs">{error.message}</pre>
+            <div className="rounded-xl bg-red-50 p-5 text-red-800 border border-red-200 shadow-sm">
+              <p className="font-semibold mb-1 text-sm">Gagal memuat koleksi memori:</p>
+              <pre className="text-xs opacity-80">{error.message}</pre>
             </div>
           </div>
         )}
 
-        <div id="gallery">
+        <div id="gallery" className="scroll-mt-16">
           {!error && memories && memories.length > 0 ? (
-            <div className="max-w-5xl mx-auto px-4 pb-20 pt-12">
-              <div className="mb-8 flex items-center gap-4">
-                <div className="h-px flex-1 bg-black/10" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#2B303A]/50">
-                  {memories.length} Memories
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 pt-12">
+              <div className="mb-10 flex items-center gap-5">
+                <div className="h-px flex-1 bg-[#2B303A]/15" />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.35em] text-[#2B303A]/70">
+                  Archive &bull; {memories.length} {memories.length === 1 ? "Memory" : "Memories"}
                 </span>
-                <div className="h-px flex-1 bg-black/10" />
+                <div className="h-px flex-1 bg-[#2B303A]/15" />
               </div>
               <MemoryIgGrid memories={memories} />
             </div>
           ) : !error ? (
           <div className="py-40 px-8 max-w-5xl mx-auto min-h-[50vh] flex items-center justify-center">
             <EmptyState 
-              title="Blank Canvas"
-              description="Your gallery is beautifully empty. Head to the hidden route to begin."
+              title="Kanvas Masih Kosong"
+              description="Belum ada kepingan memori yang diabadikan di galeri ini."
             />
           </div>
         ) : null}
