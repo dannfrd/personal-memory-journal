@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Edit3 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { AdminHeader } from "@/src/components/admin/AdminHeader";
 import { PageContainer } from "@/src/components/PageContainer";
 import { MemoryForm } from "@/src/components/admin/MemoryForm";
@@ -29,27 +29,24 @@ export default async function EditPostPage({
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F6F3EC] text-[#1F242D] flex flex-col font-sans">
       <AdminHeader />
       <main className="flex-1 py-10">
-        <PageContainer>
-          <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-black/10 pb-6 dark:border-white/10">
-            <div>
-              <Link
-                href="/admin/posts"
-                className="mb-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-foreground/60 hover:text-foreground transition-colors"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>Kembali ke Daftar Memori</span>
-              </Link>
-              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.25em] text-amber-800 dark:text-amber-400">
-                <Edit3 className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>Curator Revision</span>
-              </div>
-              <h1 className="mt-1 font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-foreground">
-                Sunting Memori: {memory.title || "Tanpa Judul"}
-              </h1>
-            </div>
+        <PageContainer className="max-w-3xl">
+          <div className="mb-8">
+            <Link
+              href="/admin/posts"
+              className="mb-3 inline-flex items-center gap-2 text-xs font-semibold text-[#1F242D]/60 hover:text-[#1F242D] transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Kembali ke Daftar Memori</span>
+            </Link>
+            <h1 className="font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-[#1F242D]">
+              Sunting Memori
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm text-[#1F242D]/60">
+              Perbarui foto, bingkai, atau cerita untuk memori ini.
+            </p>
           </div>
           <MemoryForm initialData={memory} />
         </PageContainer>

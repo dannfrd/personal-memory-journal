@@ -15,12 +15,13 @@ export function SignOutButton() {
 
   return (
     <button
+      type="button"
       onClick={handleSignOut}
       disabled={isPending}
-      className="flex items-center gap-2 text-foreground/60 transition-colors hover:text-foreground disabled:opacity-40"
+      className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1F242D]/65 transition-colors hover:text-red-700 disabled:opacity-40"
     >
-      <LogOut className="h-4 w-4" />
-      {isPending ? "Keluar..." : "Sign Out"}
+      <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+      <span>{isPending ? "Keluar..." : "Sign Out"}</span>
     </button>
   );
 }

@@ -9,15 +9,8 @@
 }
 
 :root {
-  --background: #FAF8F5; /* warm editorial ivory */
+  --background: #F6F3EC; /* warm editorial ivory */
   --foreground: #1F242D; /* deep ink charcoal */
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #121417; /* refined dark ink */
-    --foreground: #F4F1EA; /* warm parchment white */
-  }
 }
 
 body {
